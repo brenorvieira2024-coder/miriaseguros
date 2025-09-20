@@ -424,6 +424,7 @@
         </div>
     </div>
 
+    <script src="/api-helper.js"></script>
     <script>
         // Sistema de Conversas Simplificado
         let conversations = [];
@@ -450,18 +451,34 @@
         }
 
         // Verificar mensagens pendentes
-        function checkPendingMessages() {
-            const pendingMessages = JSON.parse(localStorage.getItem('rosany_admin_messages') || '[]');
-            
-            if (pendingMessages.length > 0) {
-                pendingMessages.forEach(messageData => {
-                    if (messageData.type === 'customer_message') {
-                        handleCustomerMessage(messageData);
-                    }
-                });
+        async function checkPendingMessages() {
+            try {
+                // Verificar localStorage primeiro
+                const localMessages = JSON.parse(localStorage.getItem('rosany_admin_messages') || '[]');
                 
-                // Limpar mensagens processadas
-                localStorage.removeItem('rosany_admin_messages');
+                // Verificar API também
+                const apiMessages = await getFromAPI('admin_messages') || [];
+                
+                // Combinar mensagens (remover duplicatas)
+                const allMessages = [...localMessages, ...apiMessages];
+                const uniqueMessages = allMessages.filter((message, index, self) => 
+                    index === self.findIndex(m => m.timestamp === message.timestamp && m.message === message.message)
+                );
+                
+                if (uniqueMessages.length > 0) {
+                    uniqueMessages.forEach(messageData => {
+                        if (messageData.type === 'customer_message') {
+                            handleCustomerMessage(messageData);
+                        }
+                    });
+                    
+                    // Limpar mensagens processadas
+                    localStorage.removeItem('rosany_admin_messages');
+                    await sendToAPI('admin_messages', [], true); // Limpar API também
+                }
+                
+            } catch (error) {
+                console.error('Erro ao verificar mensagens:', error);
             }
         }
 
@@ -637,7 +654,7 @@
         }
         
         // Enviar resposta para o cliente
-        function sendResponseToCustomer(customerId, message) {
+        async function sendResponseToCustomer(customerId, message) {
             const responseData = {
                 customerId: customerId,
                 message: message,
@@ -645,12 +662,20 @@
                 type: 'admin_response'
             };
             
-            // Salvar no localStorage para o cliente ler
-            const existingResponses = JSON.parse(localStorage.getItem('rosany_customer_responses') || '[]');
-            existingResponses.push(responseData);
-            localStorage.setItem('rosany_customer_responses', JSON.stringify(existingResponses));
-            
-            console.log('Resposta enviada para cliente:', responseData);
+            try {
+                // Salvar no localStorage como backup
+                const existingResponses = JSON.parse(localStorage.getItem('rosany_customer_responses') || '[]');
+                existingResponses.push(responseData);
+                localStorage.setItem('rosany_customer_responses', JSON.stringify(existingResponses));
+                
+                // Enviar para API para comunicação entre dispositivos
+                await sendToAPI('customer_responses', responseData);
+                
+                console.log('Resposta enviada para cliente:', responseData);
+                
+            } catch (error) {
+                console.error('Erro ao enviar resposta:', error);
+            }
         }
 
         // Atualizar estatísticas
