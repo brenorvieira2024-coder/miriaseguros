@@ -438,6 +438,11 @@
             // Verificação simples a cada 2 segundos
             setInterval(checkPendingMessages, 2000);
             
+            // Teste: verificar se localStorage está funcionando
+            console.log("🔧 Testando localStorage...");
+            localStorage.setItem('test_admin', 'funcionando');
+            console.log("✅ Teste localStorage:", localStorage.getItem('test_admin'));
+            
             console.log("✅ Painel Admin inicializado!");
         }
 
