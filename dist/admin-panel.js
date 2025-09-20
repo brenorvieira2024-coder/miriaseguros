@@ -1,19 +1,45 @@
 // Painel Administrativo para Chat Rosany Seguros
-// Permite resposta direta aos clientes
+// Aparece apenas para o admin e mostra mensagens dos clientes
 
 window.ROSANY_ADMIN_PANEL = {
     // Configurações
     adminName: "Rosany",
     isOnline: true,
     messages: [],
-    currentCustomer: null,
+    isAdmin: false,
+    adminPassword: "rosany2025", // Senha para acessar o painel
     
     // Inicializar painel
     init: function() {
-        this.createAdminPanel();
-        this.loadMessages();
-        this.setupEventListeners();
-        console.log("✅ Painel Admin Rosany Seguros inicializado!");
+        this.checkAdminAccess();
+        if (this.isAdmin) {
+            this.createAdminPanel();
+            this.loadMessages();
+            this.setupEventListeners();
+            console.log("✅ Painel Admin Rosany Seguros inicializado!");
+        }
+    },
+    
+    // Verificar se é admin
+    checkAdminAccess: function() {
+        // Verificar se já está logado
+        const isLoggedIn = localStorage.getItem('rosany_admin_logged') === 'true';
+        
+        if (isLoggedIn) {
+            this.isAdmin = true;
+            return;
+        }
+        
+        // Solicitar senha
+        const password = prompt("🔐 Digite a senha para acessar o painel administrativo:");
+        
+        if (password === this.adminPassword) {
+            this.isAdmin = true;
+            localStorage.setItem('rosany_admin_logged', 'true');
+            alert("✅ Acesso liberado! Painel admin carregado.");
+        } else if (password !== null) {
+            alert("❌ Senha incorreta!");
+        }
     },
     
     // Criar painel administrativo
@@ -24,7 +50,10 @@ window.ROSANY_ADMIN_PANEL = {
             <div class="admin-panel-container">
                 <div class="admin-panel-header">
                     <h3>🎛️ Painel Admin - Rosany Seguros</h3>
-                    <button class="admin-close-btn" onclick="this.parentElement.parentElement.parentElement.style.display='none'">×</button>
+                    <div class="admin-controls">
+                        <button class="admin-logout-btn" onclick="window.ROSANY_ADMIN_PANEL.logout()" title="Sair">🚪</button>
+                        <button class="admin-close-btn" onclick="this.parentElement.parentElement.parentElement.style.display='none'" title="Minimizar">−</button>
+                    </div>
                 </div>
                 
                 <div class="admin-panel-content">
@@ -38,9 +67,17 @@ window.ROSANY_ADMIN_PANEL = {
                         </div>
                     </div>
                     
+                    <!-- Mensagens dos Clientes -->
+                    <div class="admin-section">
+                        <h4>💬 Mensagens dos Clientes</h4>
+                        <div class="customer-messages" id="customerMessages">
+                            <div class="no-messages">Nenhuma mensagem ainda...</div>
+                        </div>
+                    </div>
+                    
                     <!-- Resposta Rápida -->
                     <div class="admin-section">
-                        <h4>💬 Responder Cliente</h4>
+                        <h4>✍️ Responder Cliente</h4>
                         <div class="response-area">
                             <textarea id="adminMessage" placeholder="Digite sua resposta para o cliente..." rows="3"></textarea>
                             <button onclick="window.ROSANY_ADMIN_PANEL.sendMessage()" class="send-btn">📤 Enviar</button>
@@ -72,6 +109,10 @@ window.ROSANY_ADMIN_PANEL = {
                                 <span class="stat-label">Clientes Atendidos:</span>
                                 <span class="stat-value" id="customersServed">0</span>
                             </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Mensagens Pendentes:</span>
+                                <span class="stat-value" id="pendingMessages">0</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -85,14 +126,14 @@ window.ROSANY_ADMIN_PANEL = {
                 position: fixed;
                 top: 20px;
                 left: 20px;
-                width: 350px;
+                width: 400px;
                 background: white;
                 border-radius: 15px;
                 box-shadow: 0 10px 30px rgba(0,0,0,0.2);
                 z-index: 100000;
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                 border: 1px solid #e0e0e0;
-                max-height: 80vh;
+                max-height: 85vh;
                 overflow-y: auto;
             }
             
@@ -112,11 +153,16 @@ window.ROSANY_ADMIN_PANEL = {
                 font-weight: 600;
             }
             
-            .admin-close-btn {
+            .admin-controls {
+                display: flex;
+                gap: 5px;
+            }
+            
+            .admin-logout-btn, .admin-close-btn {
                 background: none;
                 border: none;
                 color: white;
-                font-size: 20px;
+                font-size: 16px;
                 cursor: pointer;
                 padding: 5px;
                 border-radius: 50%;
@@ -125,9 +171,10 @@ window.ROSANY_ADMIN_PANEL = {
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                transition: background 0.3s;
             }
             
-            .admin-close-btn:hover {
+            .admin-logout-btn:hover, .admin-close-btn:hover {
                 background: rgba(255,255,255,0.2);
             }
             
@@ -199,6 +246,59 @@ window.ROSANY_ADMIN_PANEL = {
                 background: #2196F3;
                 color: white;
                 border-color: #2196F3;
+            }
+            
+            .customer-messages {
+                max-height: 200px;
+                overflow-y: auto;
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
+                padding: 10px;
+                background: #f8f9fa;
+            }
+            
+            .customer-message {
+                background: white;
+                padding: 10px;
+                margin-bottom: 8px;
+                border-radius: 8px;
+                border-left: 4px solid #667eea;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            
+            .customer-message:last-child {
+                margin-bottom: 0;
+            }
+            
+            .customer-message-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 5px;
+            }
+            
+            .customer-name {
+                font-weight: 600;
+                color: #333;
+                font-size: 12px;
+            }
+            
+            .customer-time {
+                font-size: 10px;
+                color: #666;
+            }
+            
+            .customer-text {
+                font-size: 13px;
+                color: #555;
+                line-height: 1.4;
+            }
+            
+            .no-messages {
+                text-align: center;
+                color: #999;
+                font-style: italic;
+                padding: 20px;
             }
             
             .response-area {
@@ -287,7 +387,7 @@ window.ROSANY_ADMIN_PANEL = {
             
             @media (max-width: 768px) {
                 .admin-panel-container {
-                    width: 300px;
+                    width: 350px;
                     left: 10px;
                     top: 10px;
                 }
@@ -312,6 +412,64 @@ window.ROSANY_ADMIN_PANEL = {
         document.getElementById('toggleStatus').addEventListener('click', () => {
             this.toggleStatus();
         });
+        
+        // Interceptar mensagens do chat widget
+        this.interceptChatMessages();
+    },
+    
+    // Interceptar mensagens do chat
+    interceptChatMessages: function() {
+        // Sobrescrever a função de envio do chat widget
+        const originalSendMessage = window.rosanySendMessage;
+        if (originalSendMessage) {
+            window.rosanySendMessage = (message) => {
+                // Chamar função original
+                originalSendMessage(message);
+                
+                // Adicionar mensagem do cliente ao painel admin
+                this.addCustomerMessage(message);
+            };
+        }
+    },
+    
+    // Adicionar mensagem do cliente
+    addCustomerMessage: function(message) {
+        const customerMessage = {
+            id: Date.now(),
+            message: message,
+            timestamp: new Date(),
+            customerName: "Cliente"
+        };
+        
+        this.messages.push(customerMessage);
+        this.displayCustomerMessage(customerMessage);
+        this.updateStats();
+        this.saveMessages();
+    },
+    
+    // Exibir mensagem do cliente no painel
+    displayCustomerMessage: function(messageObj) {
+        const container = document.getElementById('customerMessages');
+        if (!container) return;
+        
+        // Remover "Nenhuma mensagem ainda..."
+        const noMessages = container.querySelector('.no-messages');
+        if (noMessages) {
+            noMessages.remove();
+        }
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'customer-message';
+        messageDiv.innerHTML = `
+            <div class="customer-message-header">
+                <span class="customer-name">${messageObj.customerName}</span>
+                <span class="customer-time">${messageObj.timestamp.toLocaleTimeString('pt-BR')}</span>
+            </div>
+            <div class="customer-text">${messageObj.message}</div>
+        `;
+        
+        container.appendChild(messageDiv);
+        container.scrollTop = container.scrollHeight;
     },
     
     // Enviar mensagem
@@ -403,6 +561,14 @@ window.ROSANY_ADMIN_PANEL = {
         }
     },
     
+    // Logout
+    logout: function() {
+        if (confirm('Tem certeza que deseja sair do painel admin?')) {
+            localStorage.removeItem('rosany_admin_logged');
+            location.reload();
+        }
+    },
+    
     // Limpar chat
     clearChat: function() {
         if (confirm('Tem certeza que deseja limpar todo o chat?')) {
@@ -419,6 +585,12 @@ window.ROSANY_ADMIN_PANEL = {
                         </div>
                     </div>
                 `;
+            }
+            
+            // Limpar mensagens dos clientes
+            const customerMessages = document.getElementById('customerMessages');
+            if (customerMessages) {
+                customerMessages.innerHTML = '<div class="no-messages">Nenhuma mensagem ainda...</div>';
             }
             
             this.updateStats();
@@ -452,8 +624,17 @@ window.ROSANY_ADMIN_PANEL = {
             new Date(msg.timestamp).toDateString() === today
         );
         
+        const customerMessages = this.messages.filter(msg => msg.sender !== 'admin');
+        const pendingMessages = customerMessages.filter(msg => {
+            // Verificar se há resposta do admin após esta mensagem
+            const messageIndex = this.messages.indexOf(msg);
+            const nextMessages = this.messages.slice(messageIndex + 1);
+            return !nextMessages.some(nextMsg => nextMsg.sender === 'admin');
+        });
+        
         document.getElementById('messagesToday').textContent = todayMessages.length;
-        document.getElementById('customersServed').textContent = this.messages.length;
+        document.getElementById('customersServed').textContent = customerMessages.length;
+        document.getElementById('pendingMessages').textContent = pendingMessages.length;
     },
     
     // Salvar mensagens
@@ -466,6 +647,11 @@ window.ROSANY_ADMIN_PANEL = {
         const saved = localStorage.getItem('rosany_chat_messages');
         if (saved) {
             this.messages = JSON.parse(saved);
+            
+            // Exibir mensagens dos clientes
+            const customerMessages = this.messages.filter(msg => msg.sender !== 'admin');
+            customerMessages.forEach(msg => this.displayCustomerMessage(msg));
+            
             this.updateStats();
         }
     }
