@@ -520,6 +520,9 @@
         console.log('Mensagem enviada:', messageData);
         console.log('URL do admin:', adminUrl);
         
+        // Alert temporário para debug mobile
+        alert('Mensagem enviada!\nURL: ' + adminUrl);
+        
         // Mostrar mensagem de confirmação
         addMessage('Mensagem enviada! Aguarde a resposta da nossa equipe. 😊', 'bot');
         
