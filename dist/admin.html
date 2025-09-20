@@ -540,7 +540,33 @@
                 if (!message) return;
                 
                 this.addMessageToConversation(this.currentConversationId, message, 'admin');
+                
+                // Enviar resposta para o cliente
+                this.sendResponseToCustomer(this.currentConversationId, message);
+                
                 input.value = '';
+            },
+            
+            // Enviar resposta para o cliente
+            sendResponseToCustomer: function(customerId, message) {
+                const responseData = {
+                    customerId: customerId,
+                    message: message,
+                    timestamp: new Date().toISOString(),
+                    type: 'admin_response'
+                };
+                
+                // Salvar no localStorage para o cliente ler
+                const existingResponses = JSON.parse(localStorage.getItem('rosany_customer_responses') || '[]');
+                existingResponses.push(responseData);
+                localStorage.setItem('rosany_customer_responses', JSON.stringify(existingResponses));
+                
+                // Disparar evento customizado
+                window.dispatchEvent(new CustomEvent('newAdminResponse', {
+                    detail: responseData
+                }));
+                
+                console.log('Resposta enviada para cliente:', responseData);
             },
             
             // Selecionar conversa
@@ -694,6 +720,47 @@
                     this.conversations = JSON.parse(saved);
                     this.updateConversationsList();
                 }
+            },
+            
+            // Processar mensagem do cliente
+            handleCustomerMessage: function(messageData) {
+                const { customerId, customerName, message } = messageData;
+                
+                // Verificar se já existe conversa para este cliente
+                let conversation = this.conversations.find(c => c.id === customerId);
+                
+                if (!conversation) {
+                    // Criar nova conversa
+                    conversation = {
+                        id: customerId,
+                        customerName: customerName,
+                        messages: [],
+                        lastMessage: message,
+                        lastMessageTime: new Date(),
+                        unreadCount: 1,
+                        isActive: true
+                    };
+                    this.conversations.push(conversation);
+                }
+                
+                // Adicionar mensagem à conversa
+                this.addMessageToConversation(customerId, message, 'customer');
+                
+                console.log('Nova mensagem recebida:', messageData);
+            },
+            
+            // Verificar mensagens pendentes
+            checkPendingMessages: function() {
+                const pendingMessages = JSON.parse(localStorage.getItem('rosany_admin_messages') || '[]');
+                
+                pendingMessages.forEach(messageData => {
+                    if (messageData.type === 'customer_message') {
+                        this.handleCustomerMessage(messageData);
+                    }
+                });
+                
+                // Limpar mensagens processadas
+                localStorage.removeItem('rosany_admin_messages');
             }
         };
 
@@ -737,14 +804,16 @@
         document.addEventListener('DOMContentLoaded', () => {
             window.ROSANY_CONVERSATIONS.init();
             
-            // Simular algumas mensagens para teste (remover em produção)
-            setTimeout(() => {
-                simulateCustomerMessage();
-            }, 2000);
+            // Escutar mensagens dos clientes
+            window.addEventListener('newCustomerMessage', (event) => {
+                const messageData = event.detail;
+                window.ROSANY_CONVERSATIONS.handleCustomerMessage(messageData);
+            });
             
-            setTimeout(() => {
-                simulateCustomerMessage();
-            }, 4000);
+            // Verificar mensagens pendentes a cada 2 segundos
+            setInterval(() => {
+                window.ROSANY_CONVERSATIONS.checkPendingMessages();
+            }, 2000);
         });
     </script>
 </body>

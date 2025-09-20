@@ -485,14 +485,26 @@
 
     // Função para enviar mensagem para o painel admin
     function sendMessageToAdmin(customerId, customerName, message) {
-        // Simular envio para o painel admin
-        // Em um sistema real, isso seria uma chamada para o servidor
-        console.log('Mensagem enviada para admin:', {
+        // Criar objeto da mensagem
+        const messageData = {
             customerId: customerId,
             customerName: customerName,
             message: message,
-            timestamp: new Date()
-        });
+            timestamp: new Date().toISOString(),
+            type: 'customer_message'
+        };
+        
+        // Salvar no localStorage para o painel admin ler
+        const existingMessages = JSON.parse(localStorage.getItem('rosany_admin_messages') || '[]');
+        existingMessages.push(messageData);
+        localStorage.setItem('rosany_admin_messages', JSON.stringify(existingMessages));
+        
+        // Disparar evento customizado para notificar o painel admin
+        window.dispatchEvent(new CustomEvent('newCustomerMessage', {
+            detail: messageData
+        }));
+        
+        console.log('Mensagem enviada para admin:', messageData);
         
         // Mostrar mensagem de confirmação
         addMessage('Mensagem enviada! Aguarde a resposta da nossa equipe. 😊', 'bot');
@@ -518,11 +530,33 @@
     window.rosanyOpenChat = openChat;
     window.rosanyCloseChat = closeChat;
 
+    // Função para verificar respostas do admin
+    function checkAdminResponses() {
+        const customerId = localStorage.getItem('rosany_customer_id');
+        if (!customerId) return;
+        
+        const responses = JSON.parse(localStorage.getItem('rosany_customer_responses') || '[]');
+        const myResponses = responses.filter(r => r.customerId === customerId);
+        
+        myResponses.forEach(response => {
+            addMessage(response.message, 'bot');
+        });
+        
+        // Limpar respostas processadas
+        if (myResponses.length > 0) {
+            const remainingResponses = responses.filter(r => r.customerId !== customerId);
+            localStorage.setItem('rosany_customer_responses', JSON.stringify(remainingResponses));
+        }
+    }
+
     // Inicializar quando o DOM estiver pronto
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initWidget);
     } else {
         initWidget();
     }
+    
+    // Verificar respostas do admin a cada 2 segundos
+    setInterval(checkAdminResponses, 2000);
 
 })();
