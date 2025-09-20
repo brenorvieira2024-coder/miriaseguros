@@ -436,41 +436,35 @@
             updateStats();
             checkPendingMessages();
             
-            // Listener para eventos de storage (mudanças no localStorage)
-            window.addEventListener('storage', function(e) {
-                if (e.key === 'rosany_admin_messages') {
-                    checkPendingMessages();
-                }
-            });
-            
-            // Listener para eventos customizados
-            window.addEventListener('newCustomerMessage', function(e) {
-                console.log('Nova mensagem recebida via evento:', e.detail);
-                handleCustomerMessage(e.detail);
-            });
-            
-            // Verificação a cada 3 segundos
-            setInterval(checkPendingMessages, 3000);
+            // Verificação simples a cada 2 segundos
+            setInterval(checkPendingMessages, 2000);
             
             console.log("✅ Painel Admin inicializado!");
         }
 
         // Verificar mensagens pendentes
         function checkPendingMessages() {
-            const pendingMessages = JSON.parse(localStorage.getItem('rosany_admin_messages') || '[]');
+            const pendingList = JSON.parse(localStorage.getItem('rosany_pending_messages') || '[]');
             
-            console.log('Verificando mensagens pendentes:', pendingMessages);
+            console.log('🔍 Verificando mensagens pendentes:', pendingList);
             
-            if (pendingMessages.length > 0) {
-                pendingMessages.forEach(messageData => {
-                    if (messageData.type === 'customer_message') {
+            if (pendingList.length > 0) {
+                pendingList.forEach(messageId => {
+                    const messageKey = `rosany_msg_${messageId}`;
+                    const messageData = JSON.parse(localStorage.getItem(messageKey) || '{}');
+                    
+                    if (messageData.type === 'customer_message' && messageData.status === 'pending') {
                         handleCustomerMessage(messageData);
+                        
+                        // Marcar como processada
+                        messageData.status = 'processed';
+                        localStorage.setItem(messageKey, JSON.stringify(messageData));
                     }
                 });
                 
-                // Limpar mensagens processadas
-                localStorage.removeItem('rosany_admin_messages');
-                console.log('Mensagens processadas e removidas');
+                // Limpar lista de pendentes
+                localStorage.removeItem('rosany_pending_messages');
+                console.log('✅ Mensagens processadas');
             }
         }
 
@@ -648,23 +642,25 @@
         // Enviar resposta para o cliente
         function sendResponseToCustomer(customerId, message) {
             const responseData = {
+                id: Date.now(),
                 customerId: customerId,
                 message: message,
                 timestamp: new Date().toISOString(),
-                type: 'admin_response'
+                type: 'admin_response',
+                status: 'pending'
             };
             
-            // Salvar no localStorage
-            const existingResponses = JSON.parse(localStorage.getItem('rosany_customer_responses') || '[]');
-            existingResponses.push(responseData);
-            localStorage.setItem('rosany_customer_responses', JSON.stringify(existingResponses));
+            // Salvar no localStorage com chave única
+            const responseKey = `rosany_resp_${responseData.id}`;
+            localStorage.setItem(responseKey, JSON.stringify(responseData));
             
-            console.log('Resposta enviada para cliente:', responseData);
+            // Adicionar à lista de respostas pendentes
+            const pendingResponses = JSON.parse(localStorage.getItem('rosany_pending_responses') || '[]');
+            pendingResponses.push(responseData);
+            localStorage.setItem('rosany_pending_responses', JSON.stringify(pendingResponses));
             
-            // Disparar evento customizado
-            window.dispatchEvent(new CustomEvent('newAdminResponse', {
-                detail: responseData
-            }));
+            console.log('✅ Resposta enviada para cliente:', responseData);
+            console.log('📋 Chave da resposta:', responseKey);
         }
 
         // Atualizar estatísticas

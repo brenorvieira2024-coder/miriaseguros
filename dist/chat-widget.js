@@ -487,25 +487,26 @@
     function sendMessageToAdmin(customerId, customerName, message) {
         // Criar objeto da mensagem
         const messageData = {
+            id: Date.now(),
             customerId: customerId,
             customerName: customerName,
             message: message,
             timestamp: new Date().toISOString(),
-            type: 'customer_message'
+            type: 'customer_message',
+            status: 'pending'
         };
         
-        // Salvar no localStorage
-        const existingMessages = JSON.parse(localStorage.getItem('rosany_admin_messages') || '[]');
-        existingMessages.push(messageData);
-        localStorage.setItem('rosany_admin_messages', JSON.stringify(existingMessages));
+        // Salvar no localStorage com chave única
+        const messageKey = `rosany_msg_${messageData.id}`;
+        localStorage.setItem(messageKey, JSON.stringify(messageData));
         
-        console.log('Mensagem salva no localStorage:', messageData);
-        console.log('Total de mensagens:', existingMessages.length);
+        // Adicionar à lista de mensagens pendentes
+        const pendingList = JSON.parse(localStorage.getItem('rosany_pending_messages') || '[]');
+        pendingList.push(messageData.id);
+        localStorage.setItem('rosany_pending_messages', JSON.stringify(pendingList));
         
-        // Disparar evento customizado
-        window.dispatchEvent(new CustomEvent('newCustomerMessage', {
-            detail: messageData
-        }));
+        console.log('✅ Mensagem enviada:', messageData);
+        console.log('📋 Chave da mensagem:', messageKey);
         
         // Mostrar mensagem de confirmação
         addMessage('Mensagem enviada! Aguarde a resposta da nossa equipe. 😊', 'bot');
@@ -536,20 +537,25 @@
         const customerId = localStorage.getItem('rosany_customer_id');
         if (!customerId) return;
         
-        const responses = JSON.parse(localStorage.getItem('rosany_customer_responses') || '[]');
-        const myResponses = responses.filter(r => r.customerId === customerId);
+        // Verificar respostas pendentes
+        const pendingResponses = JSON.parse(localStorage.getItem('rosany_pending_responses') || '[]');
+        const myResponses = pendingResponses.filter(r => r.customerId === customerId);
         
-        console.log('Verificando respostas do admin:', myResponses);
+        console.log('🔍 Verificando respostas do admin:', myResponses);
         
         myResponses.forEach(response => {
             addMessage(response.message, 'bot');
+            
+            // Marcar como processada
+            const responseKey = `rosany_resp_${response.id}`;
+            localStorage.setItem(responseKey, JSON.stringify({...response, status: 'processed'}));
         });
         
-        // Limpar respostas processadas
+        // Limpar respostas processadas da lista pendente
         if (myResponses.length > 0) {
-            const remainingResponses = responses.filter(r => r.customerId !== customerId);
-            localStorage.setItem('rosany_customer_responses', JSON.stringify(remainingResponses));
-            console.log('Respostas processadas e removidas');
+            const remainingResponses = pendingResponses.filter(r => r.customerId !== customerId);
+            localStorage.setItem('rosany_pending_responses', JSON.stringify(remainingResponses));
+            console.log('✅ Respostas processadas e removidas');
         }
     }
 
@@ -560,23 +566,7 @@
         initWidget();
     }
     
-    // Listener para eventos de storage
-    window.addEventListener('storage', function(e) {
-        if (e.key === 'rosany_customer_responses') {
-            checkAdminResponses();
-        }
-    });
-    
-    // Listener para eventos customizados
-    window.addEventListener('newAdminResponse', function(e) {
-        console.log('Nova resposta do admin recebida via evento:', e.detail);
-        const customerId = localStorage.getItem('rosany_customer_id');
-        if (e.detail.customerId === customerId) {
-            addMessage(e.detail.message, 'bot');
-        }
-    });
-    
-    // Verificação a cada 3 segundos
-    setInterval(checkAdminResponses, 3000);
+    // Verificação simples a cada 2 segundos
+    setInterval(checkAdminResponses, 2000);
 
 })();
