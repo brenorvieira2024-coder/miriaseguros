@@ -433,17 +433,33 @@
         function init() {
             loadConversations();
             updateStats();
-            checkPendingMessages();
+            
+            // Verificar se há mensagem na URL
+            checkUrlMessage();
             
             // Verificação simples a cada 2 segundos
             setInterval(checkPendingMessages, 2000);
             
-            // Teste: verificar se localStorage está funcionando
-            console.log("🔧 Testando localStorage...");
-            localStorage.setItem('test_admin', 'funcionando');
-            console.log("✅ Teste localStorage:", localStorage.getItem('test_admin'));
-            
             console.log("✅ Painel Admin inicializado!");
+        }
+        
+        // Verificar mensagem na URL
+        function checkUrlMessage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const messageParam = urlParams.get('message');
+            
+            if (messageParam) {
+                try {
+                    const messageData = JSON.parse(decodeURIComponent(messageParam));
+                    console.log('📨 Mensagem recebida via URL:', messageData);
+                    handleCustomerMessage(messageData);
+                    
+                    // Limpar URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                } catch (error) {
+                    console.error('Erro ao processar mensagem da URL:', error);
+                }
+            }
         }
 
         // Verificar mensagens pendentes

@@ -493,10 +493,17 @@
             timestamp: new Date().toISOString()
         };
         
-        // Salvar no localStorage
+        // Salvar no localStorage (backup)
         localStorage.setItem('rosany_admin_messages', JSON.stringify(messageData));
         
+        // Enviar via URL para o painel admin
+        const adminUrl = window.location.origin + '/admin.html?message=' + encodeURIComponent(JSON.stringify(messageData));
+        
+        // Abrir nova aba com a mensagem
+        window.open(adminUrl, '_blank');
+        
         console.log('Mensagem enviada:', messageData);
+        console.log('URL do admin:', adminUrl);
         
         // Mostrar mensagem de confirmação
         addMessage('Mensagem enviada! Aguarde a resposta da nossa equipe. 😊', 'bot');
