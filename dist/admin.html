@@ -348,6 +348,90 @@
             color: #666;
         }
 
+        /* Estilos da tela de login */
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .login-box {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .login-header p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: #667eea;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
         @media (max-width: 768px) {
             .admin-container {
                 height: 95vh;
@@ -361,11 +445,36 @@
             .admin-content {
                 flex-direction: column;
             }
+
+            .login-box {
+                padding: 30px 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="admin-container">
+    <!-- Tela de Login -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <h1>🔐 Acesso Admin</h1>
+                <p>Rosany Seguros</p>
+            </div>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="input-group">
+                    <label for="adminPassword">Senha de Acesso:</label>
+                    <input type="password" id="adminPassword" placeholder="Digite a senha" required>
+                </div>
+                <button type="submit" class="login-btn">🚪 Entrar</button>
+            </form>
+            <div id="loginError" class="error-message" style="display: none;">
+                ❌ Senha incorreta! Tente novamente.
+            </div>
+        </div>
+    </div>
+
+    <!-- Painel Admin (oculto até login) -->
+    <div id="adminPanel" class="admin-container" style="display: none;">
         <div class="admin-header">
             <h1>🎛️ Painel Admin - Rosany Seguros</h1>
             <button onclick="logout()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer;">🚪 Sair</button>
@@ -425,12 +534,82 @@
     </div>
 
     <script>
+        // Sistema de Login
+        const ADMIN_PASSWORD = "rosany2024"; // Senha do admin - pode ser alterada
+        
         // Sistema de Conversas Simplificado
         let conversations = [];
         let currentConversationId = null;
+        let isLoggedIn = false;
+
+        // Função de Login
+        function handleLogin(event) {
+            event.preventDefault();
+            const password = document.getElementById('adminPassword').value;
+            const errorDiv = document.getElementById('loginError');
+            
+            if (password === ADMIN_PASSWORD) {
+                // Login bem-sucedido
+                isLoggedIn = true;
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'flex';
+                
+                // Inicializar o painel
+                init();
+                
+                // Salvar sessão
+                sessionStorage.setItem('rosany_admin_logged_in', 'true');
+                
+                console.log("✅ Login realizado com sucesso!");
+            } else {
+                // Senha incorreta
+                errorDiv.style.display = 'block';
+                document.getElementById('adminPassword').value = '';
+                document.getElementById('adminPassword').focus();
+                
+                // Esconder erro após 3 segundos
+                setTimeout(() => {
+                    errorDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Função de Logout
+        function logout() {
+            if (confirm('Tem certeza que deseja sair?')) {
+                isLoggedIn = false;
+                sessionStorage.removeItem('rosany_admin_logged_in');
+                
+                // Mostrar tela de login
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('adminPanel').style.display = 'none';
+                
+                // Limpar senha
+                document.getElementById('adminPassword').value = '';
+                document.getElementById('loginError').style.display = 'none';
+                
+                console.log("🚪 Logout realizado");
+            }
+        }
+
+        // Verificar se já está logado
+        function checkLoginStatus() {
+            const isLoggedInSession = sessionStorage.getItem('rosany_admin_logged_in');
+            if (isLoggedInSession === 'true') {
+                isLoggedIn = true;
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'flex';
+                init();
+            } else {
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('adminPanel').style.display = 'none';
+            }
+        }
 
         // Inicializar
         function init() {
+            if (!isLoggedIn) return;
+            
             loadConversations();
             updateStats();
             
@@ -748,7 +927,7 @@
         });
 
         // Inicializar quando carregar
-        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('DOMContentLoaded', checkLoginStatus);
     </script>
 </body>
 </html>

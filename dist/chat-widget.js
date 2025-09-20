@@ -493,71 +493,18 @@
             timestamp: new Date().toISOString()
         };
         
-        // Salvar no localStorage (backup)
+        // Salvar no localStorage para o admin acessar
         localStorage.setItem('rosany_admin_messages', JSON.stringify(messageData));
         
-        // Enviar via URL para o painel admin
-        const adminUrl = window.location.origin + '/admin.html?message=' + encodeURIComponent(JSON.stringify(messageData));
-        
-        // Tentar abrir nova aba (funciona melhor em desktop)
-        const newWindow = window.open(adminUrl, '_blank');
-        
-        // Se não conseguiu abrir (mobile), mostrar link para copiar
-        if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
-            // Mostrar link para o admin copiar
-            const linkText = `Link do Admin: ${adminUrl}`;
-            addMessage(`📋 ${linkText}`, 'bot');
-            addMessage('📱 No celular, copie este link e abra no computador para ver a mensagem!', 'bot');
-            
-            // Tentar copiar para área de transferência
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(adminUrl).then(() => {
-                    addMessage('✅ Link copiado para área de transferência!', 'bot');
-                });
-            }
-        }
-        
         console.log('Mensagem enviada:', messageData);
-        console.log('URL do admin:', adminUrl);
-        
-        // Alert temporário para debug mobile
-        alert('Mensagem enviada!\nURL: ' + adminUrl);
         
         // Mostrar mensagem de confirmação
-        addMessage('Mensagem enviada! Aguarde a resposta da nossa equipe. 😊', 'bot');
+        addMessage('✅ Mensagem enviada! Nossa equipe recebeu sua mensagem e responderá em breve. 😊', 'bot');
         
-        // Adicionar botão para compartilhar link (mobile)
-        if (window.innerWidth <= 768) {
-            const shareButton = document.createElement('button');
-            shareButton.innerHTML = '📤 Compartilhar Link do Admin';
-            shareButton.style.cssText = `
-                background: #667eea;
-                color: white;
-                border: none;
-                padding: 10px 15px;
-                border-radius: 20px;
-                margin: 10px 0;
-                cursor: pointer;
-                font-size: 14px;
-            `;
-            shareButton.onclick = () => {
-                if (navigator.share) {
-                    navigator.share({
-                        title: 'Link do Admin - Rosany Seguros',
-                        text: 'Link para acessar o painel admin',
-                        url: adminUrl
-                    });
-                } else {
-                    // Fallback: copiar para área de transferência
-                    navigator.clipboard.writeText(adminUrl).then(() => {
-                        addMessage('✅ Link copiado! Cole no computador para acessar o admin.', 'bot');
-                    });
-                }
-            };
-            
-            const messagesContainer = document.getElementById('rosanyChatMessages');
-            messagesContainer.appendChild(shareButton);
-        }
+        // Mostrar informações de contato alternativo
+        addMessage('📞 Se precisar de atendimento imediato, entre em contato:', 'bot');
+        addMessage(`📱 WhatsApp: ${CHAT_CONFIG.whatsapp}`, 'bot');
+        addMessage(`📧 Email: ${CHAT_CONFIG.email}`, 'bot');
     }
 
     function showTyping() {
