@@ -487,26 +487,16 @@
     function sendMessageToAdmin(customerId, customerName, message) {
         // Criar objeto da mensagem
         const messageData = {
-            id: Date.now(),
             customerId: customerId,
             customerName: customerName,
             message: message,
-            timestamp: new Date().toISOString(),
-            type: 'customer_message',
-            status: 'pending'
+            timestamp: new Date().toISOString()
         };
         
-        // Salvar no localStorage com chave única
-        const messageKey = `rosany_msg_${messageData.id}`;
-        localStorage.setItem(messageKey, JSON.stringify(messageData));
+        // Salvar no localStorage
+        localStorage.setItem('rosany_admin_messages', JSON.stringify(messageData));
         
-        // Adicionar à lista de mensagens pendentes
-        const pendingList = JSON.parse(localStorage.getItem('rosany_pending_messages') || '[]');
-        pendingList.push(messageData.id);
-        localStorage.setItem('rosany_pending_messages', JSON.stringify(pendingList));
-        
-        console.log('✅ Mensagem enviada:', messageData);
-        console.log('📋 Chave da mensagem:', messageKey);
+        console.log('Mensagem enviada:', messageData);
         
         // Mostrar mensagem de confirmação
         addMessage('Mensagem enviada! Aguarde a resposta da nossa equipe. 😊', 'bot');
@@ -537,25 +527,13 @@
         const customerId = localStorage.getItem('rosany_customer_id');
         if (!customerId) return;
         
-        // Verificar respostas pendentes
-        const pendingResponses = JSON.parse(localStorage.getItem('rosany_pending_responses') || '[]');
-        const myResponses = pendingResponses.filter(r => r.customerId === customerId);
-        
-        console.log('🔍 Verificando respostas do admin:', myResponses);
-        
-        myResponses.forEach(response => {
-            addMessage(response.message, 'bot');
-            
-            // Marcar como processada
-            const responseKey = `rosany_resp_${response.id}`;
-            localStorage.setItem(responseKey, JSON.stringify({...response, status: 'processed'}));
-        });
-        
-        // Limpar respostas processadas da lista pendente
-        if (myResponses.length > 0) {
-            const remainingResponses = pendingResponses.filter(r => r.customerId !== customerId);
-            localStorage.setItem('rosany_pending_responses', JSON.stringify(remainingResponses));
-            console.log('✅ Respostas processadas e removidas');
+        const response = localStorage.getItem('rosany_customer_response');
+        if (response) {
+            const responseData = JSON.parse(response);
+            if (responseData.customerId === customerId) {
+                addMessage(responseData.message, 'bot');
+                localStorage.removeItem('rosany_customer_response');
+            }
         }
     }
 
@@ -566,7 +544,7 @@
         initWidget();
     }
     
-    // Verificação simples a cada 2 segundos
+    // Verificação a cada 2 segundos
     setInterval(checkAdminResponses, 2000);
 
 })();

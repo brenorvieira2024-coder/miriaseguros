@@ -424,7 +424,6 @@
         </div>
     </div>
 
-    <script src="/api-helper.js"></script>
     <script>
         // Sistema de Conversas Simplificado
         let conversations = [];
@@ -444,27 +443,11 @@
 
         // Verificar mensagens pendentes
         function checkPendingMessages() {
-            const pendingList = JSON.parse(localStorage.getItem('rosany_pending_messages') || '[]');
-            
-            console.log('🔍 Verificando mensagens pendentes:', pendingList);
-            
-            if (pendingList.length > 0) {
-                pendingList.forEach(messageId => {
-                    const messageKey = `rosany_msg_${messageId}`;
-                    const messageData = JSON.parse(localStorage.getItem(messageKey) || '{}');
-                    
-                    if (messageData.type === 'customer_message' && messageData.status === 'pending') {
-                        handleCustomerMessage(messageData);
-                        
-                        // Marcar como processada
-                        messageData.status = 'processed';
-                        localStorage.setItem(messageKey, JSON.stringify(messageData));
-                    }
-                });
-                
-                // Limpar lista de pendentes
-                localStorage.removeItem('rosany_pending_messages');
-                console.log('✅ Mensagens processadas');
+            const messageData = localStorage.getItem('rosany_admin_messages');
+            if (messageData) {
+                const data = JSON.parse(messageData);
+                handleCustomerMessage(data);
+                localStorage.removeItem('rosany_admin_messages');
             }
         }
 
@@ -642,25 +625,13 @@
         // Enviar resposta para o cliente
         function sendResponseToCustomer(customerId, message) {
             const responseData = {
-                id: Date.now(),
                 customerId: customerId,
                 message: message,
-                timestamp: new Date().toISOString(),
-                type: 'admin_response',
-                status: 'pending'
+                timestamp: new Date().toISOString()
             };
             
-            // Salvar no localStorage com chave única
-            const responseKey = `rosany_resp_${responseData.id}`;
-            localStorage.setItem(responseKey, JSON.stringify(responseData));
-            
-            // Adicionar à lista de respostas pendentes
-            const pendingResponses = JSON.parse(localStorage.getItem('rosany_pending_responses') || '[]');
-            pendingResponses.push(responseData);
-            localStorage.setItem('rosany_pending_responses', JSON.stringify(pendingResponses));
-            
-            console.log('✅ Resposta enviada para cliente:', responseData);
-            console.log('📋 Chave da resposta:', responseKey);
+            localStorage.setItem('rosany_customer_response', JSON.stringify(responseData));
+            console.log('Resposta enviada:', responseData);
         }
 
         // Atualizar estatísticas
