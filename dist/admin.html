@@ -622,9 +622,29 @@
                 displayMessage(messageObj);
                 input.value = '';
                 
+                // Enviar resposta para o cliente
+                sendResponseToCustomer(currentConversationId, message);
+                
                 updateConversationsList();
                 saveConversations();
             }
+        }
+        
+        // Enviar resposta para o cliente
+        function sendResponseToCustomer(customerId, message) {
+            const responseData = {
+                customerId: customerId,
+                message: message,
+                timestamp: new Date().toISOString(),
+                type: 'admin_response'
+            };
+            
+            // Salvar no localStorage para o cliente ler
+            const existingResponses = JSON.parse(localStorage.getItem('rosany_customer_responses') || '[]');
+            existingResponses.push(responseData);
+            localStorage.setItem('rosany_customer_responses', JSON.stringify(existingResponses));
+            
+            console.log('Resposta enviada para cliente:', responseData);
         }
 
         // Atualizar estatísticas
@@ -648,6 +668,15 @@
             const saved = localStorage.getItem('rosany_conversations');
             if (saved) {
                 conversations = JSON.parse(saved);
+                
+                // Converter strings de data para objetos Date
+                conversations.forEach(conv => {
+                    conv.lastMessageTime = new Date(conv.lastMessageTime);
+                    conv.messages.forEach(msg => {
+                        msg.timestamp = new Date(msg.timestamp);
+                    });
+                });
+                
                 updateConversationsList();
             }
         }
