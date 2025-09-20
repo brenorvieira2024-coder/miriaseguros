@@ -484,7 +484,7 @@
     }
 
     // Função para enviar mensagem para o painel admin
-    async function sendMessageToAdmin(customerId, customerName, message) {
+    function sendMessageToAdmin(customerId, customerName, message) {
         // Criar objeto da mensagem
         const messageData = {
             customerId: customerId,
@@ -494,24 +494,21 @@
             type: 'customer_message'
         };
         
-        try {
-            // Salvar no localStorage como backup
-            const existingMessages = JSON.parse(localStorage.getItem('rosany_admin_messages') || '[]');
-            existingMessages.push(messageData);
-            localStorage.setItem('rosany_admin_messages', JSON.stringify(existingMessages));
-            
-            // Enviar para API para comunicação entre dispositivos
-            await sendToAPI('rosany_admin_messages', messageData);
-            
-            console.log('Mensagem enviada para admin:', messageData);
-            
-            // Mostrar mensagem de confirmação
-            addMessage('Mensagem enviada! Aguarde a resposta da nossa equipe. 😊', 'bot');
-            
-        } catch (error) {
-            console.error('Erro ao enviar mensagem:', error);
-            addMessage('Mensagem enviada! Aguarde a resposta da nossa equipe. 😊', 'bot');
-        }
+        // Salvar no localStorage
+        const existingMessages = JSON.parse(localStorage.getItem('rosany_admin_messages') || '[]');
+        existingMessages.push(messageData);
+        localStorage.setItem('rosany_admin_messages', JSON.stringify(existingMessages));
+        
+        console.log('Mensagem salva no localStorage:', messageData);
+        console.log('Total de mensagens:', existingMessages.length);
+        
+        // Disparar evento customizado
+        window.dispatchEvent(new CustomEvent('newCustomerMessage', {
+            detail: messageData
+        }));
+        
+        // Mostrar mensagem de confirmação
+        addMessage('Mensagem enviada! Aguarde a resposta da nossa equipe. 😊', 'bot');
     }
 
     function showTyping() {
@@ -535,41 +532,24 @@
     window.rosanyCloseChat = closeChat;
 
     // Função para verificar respostas do admin
-    async function checkAdminResponses() {
+    function checkAdminResponses() {
         const customerId = localStorage.getItem('rosany_customer_id');
         if (!customerId) return;
         
-        try {
-            // Verificar no localStorage primeiro
-            const localResponses = JSON.parse(localStorage.getItem('rosany_customer_responses') || '[]');
-            const myLocalResponses = localResponses.filter(r => r.customerId === customerId);
-            
-            // Verificar na API também
-            const apiResponses = await getFromAPI('rosany_customer_responses') || [];
-            const myApiResponses = apiResponses.filter(r => r.customerId === customerId);
-            
-            // Combinar respostas (remover duplicatas)
-            const allResponses = [...myLocalResponses, ...myApiResponses];
-            const uniqueResponses = allResponses.filter((response, index, self) => 
-                index === self.findIndex(r => r.timestamp === response.timestamp && r.message === response.message)
-            );
-            
-            uniqueResponses.forEach(response => {
-                addMessage(response.message, 'bot');
-            });
-            
-            // Limpar respostas processadas
-            if (uniqueResponses.length > 0) {
-                const remainingLocalResponses = localResponses.filter(r => r.customerId !== customerId);
-                localStorage.setItem('rosany_customer_responses', JSON.stringify(remainingLocalResponses));
-                
-                // Limpar da API também
-                const remainingApiResponses = apiResponses.filter(r => r.customerId !== customerId);
-                await sendToAPI('rosany_customer_responses', remainingApiResponses, true);
-            }
-            
-        } catch (error) {
-            console.error('Erro ao verificar respostas:', error);
+        const responses = JSON.parse(localStorage.getItem('rosany_customer_responses') || '[]');
+        const myResponses = responses.filter(r => r.customerId === customerId);
+        
+        console.log('Verificando respostas do admin:', myResponses);
+        
+        myResponses.forEach(response => {
+            addMessage(response.message, 'bot');
+        });
+        
+        // Limpar respostas processadas
+        if (myResponses.length > 0) {
+            const remainingResponses = responses.filter(r => r.customerId !== customerId);
+            localStorage.setItem('rosany_customer_responses', JSON.stringify(remainingResponses));
+            console.log('Respostas processadas e removidas');
         }
     }
 
@@ -580,14 +560,23 @@
         initWidget();
     }
     
-    // Verificar respostas do admin apenas quando necessário
+    // Listener para eventos de storage
     window.addEventListener('storage', function(e) {
         if (e.key === 'rosany_customer_responses') {
             checkAdminResponses();
         }
     });
     
-    // Verificação ocasional (a cada 10 segundos) apenas como backup
-    setInterval(checkAdminResponses, 10000);
+    // Listener para eventos customizados
+    window.addEventListener('newAdminResponse', function(e) {
+        console.log('Nova resposta do admin recebida via evento:', e.detail);
+        const customerId = localStorage.getItem('rosany_customer_id');
+        if (e.detail.customerId === customerId) {
+            addMessage(e.detail.message, 'bot');
+        }
+    });
+    
+    // Verificação a cada 3 segundos
+    setInterval(checkAdminResponses, 3000);
 
 })();
