@@ -15,18 +15,17 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            padding: 20px;
         }
 
         .admin-container {
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            width: 95%;
+            width: 100%;
             max-width: 1400px;
             height: 90vh;
+            margin: 0 auto;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -44,35 +43,6 @@
         .admin-header h1 {
             font-size: 24px;
             font-weight: 600;
-        }
-
-        .admin-header-info {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 15px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 20px;
-        }
-
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #4CAF50;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
         }
 
         .admin-content {
@@ -238,6 +208,11 @@
             color: white;
         }
 
+        .test-btn {
+            background: #4CAF50;
+            color: white;
+        }
+
         .control-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
@@ -375,7 +350,6 @@
 
         @media (max-width: 768px) {
             .admin-container {
-                width: 95%;
                 height: 95vh;
             }
             
@@ -394,13 +368,7 @@
     <div class="admin-container">
         <div class="admin-header">
             <h1>🎛️ Painel Admin - Rosany Seguros</h1>
-            <div class="admin-header-info">
-                <div class="status-indicator">
-                    <div class="status-dot"></div>
-                    <span id="statusText">Online</span>
-                </div>
-                <button onclick="logout()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer;">🚪 Sair</button>
-            </div>
+            <button onclick="logout()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer;">🚪 Sair</button>
         </div>
 
         <div class="admin-content">
@@ -436,7 +404,7 @@
                     <div class="chat-controls">
                         <button class="control-btn clear-btn" onclick="clearCurrentConversation()">🗑️ Limpar</button>
                         <button class="control-btn export-btn" onclick="exportCurrentConversation()">📥 Exportar</button>
-                        <button class="control-btn" onclick="simulateMessageFromStorage()" style="background: #4CAF50; color: white;">🧪 Teste</button>
+                        <button class="control-btn test-btn" onclick="simulateMessage()">🧪 Teste</button>
                     </div>
                 </div>
 
@@ -457,29 +425,50 @@
     </div>
 
     <script>
-        // Sistema de Conversas Individuais
-        window.ROSANY_CONVERSATIONS = {
-            conversations: [],
-            currentConversationId: null,
+        // Sistema de Conversas Simplificado
+        let conversations = [];
+        let currentConversationId = null;
+
+        // Inicializar
+        function init() {
+            loadConversations();
+            updateStats();
+            checkPendingMessages();
             
-            init: function() {
-                this.loadConversations();
-                this.setupEventListeners();
-                this.updateStats();
-                console.log("✅ Sistema de Conversas inicializado!");
-            },
+            // Verificar mensagens pendentes a cada 2 segundos
+            setInterval(checkPendingMessages, 2000);
             
-            setupEventListeners: function() {
-                document.getElementById('responseInput').addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        this.sendMessage();
+            console.log("✅ Painel Admin inicializado!");
+        }
+
+        // Verificar mensagens pendentes
+        function checkPendingMessages() {
+            const pendingMessages = JSON.parse(localStorage.getItem('rosany_admin_messages') || '[]');
+            
+            console.log('Verificando mensagens pendentes:', pendingMessages);
+            
+            if (pendingMessages.length > 0) {
+                pendingMessages.forEach(messageData => {
+                    if (messageData.type === 'customer_message') {
+                        handleCustomerMessage(messageData);
                     }
                 });
-            },
+                
+                // Limpar mensagens processadas
+                localStorage.removeItem('rosany_admin_messages');
+            }
+        }
+
+        // Processar mensagem do cliente
+        function handleCustomerMessage(messageData) {
+            const { customerId, customerName, message } = messageData;
             
-            // Criar nova conversa quando cliente envia primeira mensagem
-            createConversation: function(customerId, customerName, message) {
-                const conversation = {
+            // Verificar se já existe conversa para este cliente
+            let conversation = conversations.find(c => c.id === customerId);
+            
+            if (!conversation) {
+                // Criar nova conversa
+                conversation = {
                     id: customerId,
                     customerName: customerName,
                     messages: [],
@@ -488,25 +477,141 @@
                     unreadCount: 1,
                     isActive: true
                 };
-                
-                this.conversations.push(conversation);
-                this.addMessageToConversation(customerId, message, 'customer');
-                this.updateConversationsList();
-                this.updateStats();
-                this.saveConversations();
-                
-                return conversation;
-            },
+                conversations.push(conversation);
+            } else {
+                // Adicionar mensagem à conversa existente
+                conversation.messages.push({
+                    id: Date.now(),
+                    message: message,
+                    sender: 'customer',
+                    timestamp: new Date()
+                });
+                conversation.lastMessage = message;
+                conversation.lastMessageTime = new Date();
+                conversation.unreadCount = (conversation.unreadCount || 0) + 1;
+            }
             
-            // Adicionar mensagem a uma conversa
-            addMessageToConversation: function(conversationId, message, sender) {
-                const conversation = this.conversations.find(c => c.id === conversationId);
-                if (!conversation) return;
-                
+            updateConversationsList();
+            updateStats();
+            saveConversations();
+            
+            console.log('Nova mensagem recebida:', messageData);
+        }
+
+        // Simular mensagem de teste
+        function simulateMessage() {
+            const testMessage = {
+                customerId: 'test_customer_' + Date.now(),
+                customerName: 'Cliente Teste',
+                message: 'Esta é uma mensagem de teste',
+                timestamp: new Date().toISOString(),
+                type: 'customer_message'
+            };
+            
+            handleCustomerMessage(testMessage);
+            console.log('Mensagem de teste criada');
+        }
+
+        // Atualizar lista de conversas
+        function updateConversationsList() {
+            const container = document.getElementById('conversationsList');
+            
+            if (conversations.length === 0) {
+                container.innerHTML = '<div class="no-conversation">Nenhuma conversa ainda...</div>';
+                return;
+            }
+            
+            // Ordenar por última mensagem
+            const sortedConversations = [...conversations].sort((a, b) => 
+                new Date(b.lastMessageTime) - new Date(a.lastMessageTime)
+            );
+            
+            container.innerHTML = sortedConversations.map(conv => `
+                <div class="conversation-item ${conv.id === currentConversationId ? 'active' : ''} ${conv.unreadCount > 0 ? 'unread' : ''}" 
+                     onclick="selectConversation('${conv.id}')">
+                    <div class="conversation-header">
+                        <span class="customer-name">${conv.customerName}</span>
+                        <span class="conversation-time">${conv.lastMessageTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                    <div class="last-message">${conv.lastMessage}</div>
+                    <div class="conversation-stats">
+                        <span class="message-count">${conv.messages.length} msgs</span>
+                        ${conv.unreadCount > 0 ? `<span class="unread-badge">${conv.unreadCount}</span>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Selecionar conversa
+        function selectConversation(conversationId) {
+            currentConversationId = conversationId;
+            const conversation = conversations.find(c => c.id === conversationId);
+            
+            if (!conversation) return;
+            
+            // Marcar como lida
+            conversation.unreadCount = 0;
+            
+            // Atualizar header
+            document.getElementById('customerName').textContent = conversation.customerName;
+            document.getElementById('customerInfo').textContent = `Última mensagem: ${conversation.lastMessageTime.toLocaleString('pt-BR')}`;
+            document.getElementById('chatHeader').style.display = 'flex';
+            document.getElementById('responseArea').style.display = 'flex';
+            
+            // Limpar e exibir mensagens
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.innerHTML = '';
+            
+            conversation.messages.forEach(msg => displayMessage(msg));
+            
+            updateConversationsList();
+            updateStats();
+            saveConversations();
+        }
+
+        // Exibir mensagem no chat
+        function displayMessage(messageObj) {
+            const container = document.getElementById('chatMessages');
+            const noMessages = container.querySelector('.no-messages');
+            
+            if (noMessages) {
+                noMessages.remove();
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${messageObj.sender}`;
+            
+            const time = messageObj.timestamp.toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            messageDiv.innerHTML = `
+                <div class="message-content">
+                    ${messageObj.sender === 'admin' ? '<strong>Rosany:</strong> ' : ''}${messageObj.message.replace(/\n/g, '<br>')}
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+            
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Enviar mensagem
+        function sendMessage() {
+            if (!currentConversationId) return;
+            
+            const input = document.getElementById('responseInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            const conversation = conversations.find(c => c.id === currentConversationId);
+            if (conversation) {
                 const messageObj = {
                     id: Date.now(),
                     message: message,
-                    sender: sender,
+                    sender: 'admin',
                     timestamp: new Date()
                 };
                 
@@ -514,326 +619,98 @@
                 conversation.lastMessage = message;
                 conversation.lastMessageTime = new Date();
                 
-                if (sender === 'customer') {
-                    conversation.unreadCount = (conversation.unreadCount || 0) + 1;
-                } else {
-                    conversation.unreadCount = 0;
-                }
-                
-                this.saveConversations();
-                
-                // Se é a conversa ativa, atualizar display
-                if (this.currentConversationId === conversationId) {
-                    this.displayMessage(messageObj);
-                }
-                
-                this.updateConversationsList();
-                this.updateStats();
-            },
-            
-            // Enviar mensagem do admin
-            sendMessage: function() {
-                if (!this.currentConversationId) return;
-                
-                const input = document.getElementById('responseInput');
-                const message = input.value.trim();
-                
-                if (!message) return;
-                
-                this.addMessageToConversation(this.currentConversationId, message, 'admin');
-                
-                // Enviar resposta para o cliente
-                this.sendResponseToCustomer(this.currentConversationId, message);
-                
+                displayMessage(messageObj);
                 input.value = '';
-            },
+                
+                updateConversationsList();
+                saveConversations();
+            }
+        }
+
+        // Atualizar estatísticas
+        function updateStats() {
+            const totalConversations = conversations.length;
+            const unreadMessages = conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
+            const activeConversations = conversations.filter(conv => conv.isActive).length;
             
-            // Enviar resposta para o cliente
-            sendResponseToCustomer: function(customerId, message) {
-                const responseData = {
-                    customerId: customerId,
-                    message: message,
-                    timestamp: new Date().toISOString(),
-                    type: 'admin_response'
-                };
-                
-                // Salvar no localStorage para o cliente ler
-                const existingResponses = JSON.parse(localStorage.getItem('rosany_customer_responses') || '[]');
-                existingResponses.push(responseData);
-                localStorage.setItem('rosany_customer_responses', JSON.stringify(existingResponses));
-                
-                // Disparar evento customizado
-                window.dispatchEvent(new CustomEvent('newAdminResponse', {
-                    detail: responseData
-                }));
-                
-                console.log('Resposta enviada para cliente:', responseData);
-            },
+            document.getElementById('totalConversations').textContent = totalConversations;
+            document.getElementById('unreadMessages').textContent = unreadMessages;
+            document.getElementById('activeConversations').textContent = activeConversations;
+        }
+
+        // Salvar conversas
+        function saveConversations() {
+            localStorage.setItem('rosany_conversations', JSON.stringify(conversations));
+        }
+
+        // Carregar conversas
+        function loadConversations() {
+            const saved = localStorage.getItem('rosany_conversations');
+            if (saved) {
+                conversations = JSON.parse(saved);
+                updateConversationsList();
+            }
+        }
+
+        // Limpar conversa atual
+        function clearCurrentConversation() {
+            if (!currentConversationId) return;
             
-            // Selecionar conversa
-            selectConversation: function(conversationId) {
-                this.currentConversationId = conversationId;
-                const conversation = this.conversations.find(c => c.id === conversationId);
-                
-                if (!conversation) return;
-                
-                // Marcar como lida
-                conversation.unreadCount = 0;
-                
-                // Atualizar header
-                document.getElementById('customerName').textContent = conversation.customerName;
-                document.getElementById('customerInfo').textContent = `Última mensagem: ${conversation.lastMessageTime.toLocaleString('pt-BR')}`;
-                document.getElementById('chatHeader').style.display = 'flex';
-                document.getElementById('responseArea').style.display = 'flex';
-                
-                // Limpar e exibir mensagens
-                const messagesContainer = document.getElementById('chatMessages');
-                messagesContainer.innerHTML = '';
-                
-                conversation.messages.forEach(msg => this.displayMessage(msg));
-                
-                this.updateConversationsList();
-                this.updateStats();
-                this.saveConversations();
-            },
-            
-            // Exibir mensagem no chat
-            displayMessage: function(messageObj) {
-                const container = document.getElementById('chatMessages');
-                const noMessages = container.querySelector('.no-messages');
-                
-                if (noMessages) {
-                    noMessages.remove();
-                }
-                
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${messageObj.sender}`;
-                
-                const time = messageObj.timestamp.toLocaleTimeString('pt-BR', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                });
-                
-                messageDiv.innerHTML = `
-                    <div class="message-content">
-                        ${messageObj.sender === 'admin' ? '<strong>Rosany:</strong> ' : ''}${messageObj.message.replace(/\n/g, '<br>')}
-                        <div class="message-time">${time}</div>
-                    </div>
-                `;
-                
-                container.appendChild(messageDiv);
-                container.scrollTop = container.scrollHeight;
-            },
-            
-            // Atualizar lista de conversas
-            updateConversationsList: function() {
-                const container = document.getElementById('conversationsList');
-                
-                if (this.conversations.length === 0) {
-                    container.innerHTML = '<div class="no-conversation">Nenhuma conversa ainda...</div>';
-                    return;
-                }
-                
-                // Ordenar por última mensagem
-                const sortedConversations = [...this.conversations].sort((a, b) => 
-                    new Date(b.lastMessageTime) - new Date(a.lastMessageTime)
-                );
-                
-                container.innerHTML = sortedConversations.map(conv => `
-                    <div class="conversation-item ${conv.id === this.currentConversationId ? 'active' : ''} ${conv.unreadCount > 0 ? 'unread' : ''}" 
-                         onclick="window.ROSANY_CONVERSATIONS.selectConversation('${conv.id}')">
-                        <div class="conversation-header">
-                            <span class="customer-name">${conv.customerName}</span>
-                            <span class="conversation-time">${conv.lastMessageTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
-                        </div>
-                        <div class="last-message">${conv.lastMessage}</div>
-                        <div class="conversation-stats">
-                            <span class="message-count">${conv.messages.length} msgs</span>
-                            ${conv.unreadCount > 0 ? `<span class="unread-badge">${conv.unreadCount}</span>` : ''}
-                        </div>
-                    </div>
-                `).join('');
-            },
-            
-            // Atualizar estatísticas
-            updateStats: function() {
-                const totalConversations = this.conversations.length;
-                const unreadMessages = this.conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
-                const activeConversations = this.conversations.filter(conv => conv.isActive).length;
-                
-                document.getElementById('totalConversations').textContent = totalConversations;
-                document.getElementById('unreadMessages').textContent = unreadMessages;
-                document.getElementById('activeConversations').textContent = activeConversations;
-            },
-            
-            // Limpar conversa atual
-            clearCurrentConversation: function() {
-                if (!this.currentConversationId) return;
-                
-                if (confirm('Tem certeza que deseja limpar esta conversa?')) {
-                    const conversation = this.conversations.find(c => c.id === this.currentConversationId);
-                    if (conversation) {
-                        conversation.messages = [];
-                        conversation.lastMessage = 'Conversa limpa';
-                        conversation.lastMessageTime = new Date();
-                        conversation.unreadCount = 0;
-                        
-                        document.getElementById('chatMessages').innerHTML = '<div class="no-messages">Conversa limpa</div>';
-                        this.updateConversationsList();
-                        this.saveConversations();
-                    }
-                }
-            },
-            
-            // Exportar conversa atual
-            exportCurrentConversation: function() {
-                if (!this.currentConversationId) return;
-                
-                const conversation = this.conversations.find(c => c.id === this.currentConversationId);
-                if (!conversation) return;
-                
-                const chatData = {
-                    customerName: conversation.customerName,
-                    conversationId: conversation.id,
-                    exportDate: new Date().toISOString(),
-                    messages: conversation.messages,
-                    totalMessages: conversation.messages.length
-                };
-                
-                const dataStr = JSON.stringify(chatData, null, 2);
-                const dataBlob = new Blob([dataStr], {type: 'application/json'});
-                
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(dataBlob);
-                link.download = `conversa-${conversation.customerName}-${new Date().toISOString().split('T')[0]}.json`;
-                link.click();
-            },
-            
-            // Salvar conversas
-            saveConversations: function() {
-                localStorage.setItem('rosany_conversations', JSON.stringify(this.conversations));
-            },
-            
-            // Carregar conversas
-            loadConversations: function() {
-                const saved = localStorage.getItem('rosany_conversations');
-                if (saved) {
-                    this.conversations = JSON.parse(saved);
-                    this.updateConversationsList();
-                }
-            },
-            
-            // Processar mensagem do cliente
-            handleCustomerMessage: function(messageData) {
-                const { customerId, customerName, message } = messageData;
-                
-                // Verificar se já existe conversa para este cliente
-                let conversation = this.conversations.find(c => c.id === customerId);
-                
-                if (!conversation) {
-                    // Criar nova conversa
-                    conversation = {
-                        id: customerId,
-                        customerName: customerName,
-                        messages: [],
-                        lastMessage: message,
-                        lastMessageTime: new Date(),
-                        unreadCount: 1,
-                        isActive: true
-                    };
-                    this.conversations.push(conversation);
-                }
-                
-                // Adicionar mensagem à conversa
-                this.addMessageToConversation(customerId, message, 'customer');
-                
-                console.log('Nova mensagem recebida:', messageData);
-            },
-            
-            // Verificar mensagens pendentes
-            checkPendingMessages: function() {
-                const pendingMessages = JSON.parse(localStorage.getItem('rosany_admin_messages') || '[]');
-                
-                console.log('Verificando mensagens pendentes:', pendingMessages);
-                
-                if (pendingMessages.length > 0) {
-                    pendingMessages.forEach(messageData => {
-                        if (messageData.type === 'customer_message') {
-                            this.handleCustomerMessage(messageData);
-                        }
-                    });
+            if (confirm('Tem certeza que deseja limpar esta conversa?')) {
+                const conversation = conversations.find(c => c.id === currentConversationId);
+                if (conversation) {
+                    conversation.messages = [];
+                    conversation.lastMessage = 'Conversa limpa';
+                    conversation.lastMessageTime = new Date();
+                    conversation.unreadCount = 0;
                     
-                    // Limpar mensagens processadas
-                    localStorage.removeItem('rosany_admin_messages');
+                    document.getElementById('chatMessages').innerHTML = '<div class="no-messages">Conversa limpa</div>';
+                    updateConversationsList();
+                    saveConversations();
                 }
             }
-        };
-
-        // Funções globais
-        function sendMessage() {
-            window.ROSANY_CONVERSATIONS.sendMessage();
         }
 
-        function clearCurrentConversation() {
-            window.ROSANY_CONVERSATIONS.clearCurrentConversation();
-        }
-
+        // Exportar conversa atual
         function exportCurrentConversation() {
-            window.ROSANY_CONVERSATIONS.exportCurrentConversation();
+            if (!currentConversationId) return;
+            
+            const conversation = conversations.find(c => c.id === currentConversationId);
+            if (!conversation) return;
+            
+            const chatData = {
+                customerName: conversation.customerName,
+                conversationId: conversation.id,
+                exportDate: new Date().toISOString(),
+                messages: conversation.messages,
+                totalMessages: conversation.messages.length
+            };
+            
+            const dataStr = JSON.stringify(chatData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `conversa-${conversation.customerName}-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
         }
 
+        // Logout
         function logout() {
             if (confirm('Tem certeza que deseja sair?')) {
                 window.location.href = '/';
             }
         }
 
-        // Simular mensagens de clientes para teste
-        function simulateCustomerMessage() {
-            const customers = ['João Silva', 'Maria Santos', 'Pedro Costa', 'Ana Oliveira'];
-            const messages = [
-                'Olá, gostaria de fazer uma cotação de seguro auto',
-                'Preciso de informações sobre seguro residencial',
-                'Tenho uma emergência com meu seguro',
-                'Quero falar sobre seguro de vida'
-            ];
-            
-            const randomCustomer = customers[Math.floor(Math.random() * customers.length)];
-            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-            const customerId = 'customer_' + Date.now();
-            
-            window.ROSANY_CONVERSATIONS.createConversation(customerId, randomCustomer, randomMessage);
-        }
-        
-        // Função para simular mensagem do localStorage (para teste)
-        function simulateMessageFromStorage() {
-            const testMessage = {
-                customerId: 'test_customer_123',
-                customerName: 'Cliente Teste',
-                message: 'Esta é uma mensagem de teste',
-                timestamp: new Date().toISOString(),
-                type: 'customer_message'
-            };
-            
-            localStorage.setItem('rosany_admin_messages', JSON.stringify([testMessage]));
-            console.log('Mensagem de teste adicionada ao localStorage');
-        }
+        // Event listeners
+        document.getElementById('responseInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
 
         // Inicializar quando carregar
-        document.addEventListener('DOMContentLoaded', () => {
-            window.ROSANY_CONVERSATIONS.init();
-            
-            // Escutar mensagens dos clientes
-            window.addEventListener('newCustomerMessage', (event) => {
-                const messageData = event.detail;
-                window.ROSANY_CONVERSATIONS.handleCustomerMessage(messageData);
-            });
-            
-            // Verificar mensagens pendentes a cada 2 segundos
-            setInterval(() => {
-                window.ROSANY_CONVERSATIONS.checkPendingMessages();
-            }, 2000);
-        });
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
