@@ -444,15 +444,22 @@
         // Verificar mensagens pendentes
         function checkPendingMessages() {
             const messageData = localStorage.getItem('rosany_admin_messages');
+            console.log('🔍 Admin verificando mensagens:', messageData);
+            
             if (messageData) {
                 const data = JSON.parse(messageData);
+                console.log('✅ Admin encontrou mensagem:', data);
                 handleCustomerMessage(data);
                 localStorage.removeItem('rosany_admin_messages');
+                console.log('🗑️ Mensagem removida do localStorage');
+            } else {
+                console.log('❌ Nenhuma mensagem encontrada');
             }
         }
 
         // Processar mensagem do cliente
         function handleCustomerMessage(messageData) {
+            console.log('📨 Processando mensagem do cliente:', messageData);
             const { customerId, customerName, message } = messageData;
             
             // Verificar se já existe conversa para este cliente
