@@ -338,21 +338,14 @@
                     <button class="rosany-chat-close" id="rosanyChatClose">×</button>
                 </div>
                 
-                <div class="rosany-chat-messages" id="rosanyChatMessages">
-                    <div class="rosany-chat-message bot">
-                        <div class="rosany-chat-message-content">
-                            Olá! 👋 Bem-vindo à ${CHAT_CONFIG.businessName}!<br>
-                            Como posso ajudá-lo hoje?
-                        </div>
-                    </div>
-                    
-                    <div class="rosany-chat-quick-actions">
-                        <button class="rosany-chat-quick-action" onclick="rosanySendQuickMessage('Cotação de seguro')">📋 Cotação</button>
-                        <button class="rosany-chat-quick-action" onclick="rosanySendQuickMessage('Informações sobre seguros')">ℹ️ Informações</button>
-                        <button class="rosany-chat-quick-action" onclick="rosanySendQuickMessage('Falar com corretor')">👤 Corretor</button>
-                        <button class="rosany-chat-quick-action" onclick="rosanySendQuickMessage('Emergência')">🚨 Emergência</button>
+            <div class="rosany-chat-messages" id="rosanyChatMessages">
+                <div class="rosany-chat-message bot">
+                    <div class="rosany-chat-message-content">
+                        Olá! 👋 Bem-vindo à ${CHAT_CONFIG.businessName}!<br>
+                        Digite sua mensagem e nossa equipe responderá em breve.
                     </div>
                 </div>
+            </div>
                 
                 <div class="rosany-chat-typing" id="rosanyChatTyping">
                     <div class="rosany-chat-typing-dot"></div>
@@ -448,19 +441,25 @@
         
         if (!message) return;
 
+        // Gerar ID único para o cliente
+        let customerId = localStorage.getItem('rosany_customer_id');
+        if (!customerId) {
+            customerId = 'customer_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('rosany_customer_id', customerId);
+        }
+
+        // Obter nome do cliente
+        let customerName = localStorage.getItem('rosany_customer_name');
+        if (!customerName) {
+            customerName = prompt('Por favor, digite seu nome:') || 'Cliente';
+            localStorage.setItem('rosany_customer_name', customerName);
+        }
+
         addMessage(message, 'user');
         input.value = '';
 
-        // Simular resposta automática
-        setTimeout(() => {
-            const response = getAutoResponse(message);
-            showTyping();
-            
-            setTimeout(() => {
-                hideTyping();
-                addMessage(response, 'bot');
-            }, 1500);
-        }, 500);
+        // Enviar mensagem para o painel admin
+        sendMessageToAdmin(customerId, customerName, message);
     }
 
     function rosanySendQuickMessage(message) {
@@ -484,20 +483,19 @@
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
-    function getAutoResponse(message) {
-        const lowerMessage = message.toLowerCase();
+    // Função para enviar mensagem para o painel admin
+    function sendMessageToAdmin(customerId, customerName, message) {
+        // Simular envio para o painel admin
+        // Em um sistema real, isso seria uma chamada para o servidor
+        console.log('Mensagem enviada para admin:', {
+            customerId: customerId,
+            customerName: customerName,
+            message: message,
+            timestamp: new Date()
+        });
         
-        if (lowerMessage.includes('cotação') || lowerMessage.includes('cotar')) {
-            return AUTO_RESPONSES.cotação;
-        } else if (lowerMessage.includes('informação') || lowerMessage.includes('tipos') || lowerMessage.includes('seguro')) {
-            return AUTO_RESPONSES.informações;
-        } else if (lowerMessage.includes('corretor') || lowerMessage.includes('falar') || lowerMessage.includes('atendimento')) {
-            return AUTO_RESPONSES.corretor;
-        } else if (lowerMessage.includes('emergência') || lowerMessage.includes('sinistro') || lowerMessage.includes('urgente')) {
-            return AUTO_RESPONSES.emergência;
-        } else {
-            return `Obrigada pelo seu contato! 😊\n\nPara um atendimento mais personalizado, entre em contato conosco:\n\n📱 **WhatsApp:** ${CHAT_CONFIG.whatsapp}\n📞 **Telefone:** ${CHAT_CONFIG.phone}\n📧 **Email:** ${CHAT_CONFIG.email}\n\nNossa equipe está pronta para ajudá-lo!`;
-        }
+        // Mostrar mensagem de confirmação
+        addMessage('Mensagem enviada! Aguarde a resposta da nossa equipe. 😊', 'bot');
     }
 
     function showTyping() {
