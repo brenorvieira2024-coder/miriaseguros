@@ -25,12 +25,12 @@
         <style id="rosany-chat-widget-styles">
             .rosany-chat-widget {
                 position: fixed;
-                z-index: 9999;
+                z-index: 99999;
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             }
             
             .rosany-chat-widget.bottom-right {
-                bottom: 20px;
+                bottom: 80px;
                 right: 20px;
             }
             
