@@ -435,8 +435,16 @@
             updateStats();
             checkPendingMessages();
             
-            // Verificar mensagens pendentes a cada 2 segundos
-            setInterval(checkPendingMessages, 2000);
+            // Verificar mensagens pendentes apenas quando necessário
+            // Usar evento personalizado em vez de polling constante
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'rosany_admin_messages') {
+                    checkPendingMessages();
+                }
+            });
+            
+            // Verificação ocasional (a cada 10 segundos) apenas como backup
+            setInterval(checkPendingMessages, 10000);
             
             console.log("✅ Painel Admin inicializado!");
         }
@@ -444,8 +452,6 @@
         // Verificar mensagens pendentes
         function checkPendingMessages() {
             const pendingMessages = JSON.parse(localStorage.getItem('rosany_admin_messages') || '[]');
-            
-            console.log('Verificando mensagens pendentes:', pendingMessages);
             
             if (pendingMessages.length > 0) {
                 pendingMessages.forEach(messageData => {

@@ -536,19 +536,12 @@
     // Função para verificar respostas do admin
     function checkAdminResponses() {
         const customerId = localStorage.getItem('rosany_customer_id');
-        if (!customerId) {
-            console.log('Nenhum customerId encontrado');
-            return;
-        }
+        if (!customerId) return;
         
         const responses = JSON.parse(localStorage.getItem('rosany_customer_responses') || '[]');
-        console.log('Verificando respostas do admin:', responses);
-        
         const myResponses = responses.filter(r => r.customerId === customerId);
-        console.log('Minhas respostas:', myResponses);
         
         myResponses.forEach(response => {
-            console.log('Adicionando resposta do admin:', response.message);
             addMessage(response.message, 'bot');
         });
         
@@ -556,7 +549,6 @@
         if (myResponses.length > 0) {
             const remainingResponses = responses.filter(r => r.customerId !== customerId);
             localStorage.setItem('rosany_customer_responses', JSON.stringify(remainingResponses));
-            console.log('Respostas processadas e removidas');
         }
     }
 
@@ -567,7 +559,14 @@
         initWidget();
     }
     
-    // Verificar respostas do admin a cada 2 segundos
-    setInterval(checkAdminResponses, 2000);
+    // Verificar respostas do admin apenas quando necessário
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'rosany_customer_responses') {
+            checkAdminResponses();
+        }
+    });
+    
+    // Verificação ocasional (a cada 10 segundos) apenas como backup
+    setInterval(checkAdminResponses, 10000);
 
 })();
