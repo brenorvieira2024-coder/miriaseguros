@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin - Rosany Seguros</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .admin-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 1200px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .admin-header-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4CAF50;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .admin-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .admin-sidebar {
+            width: 300px;
+            background: #f8f9fa;
+            border-right: 1px solid #e0e0e0;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .admin-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .admin-section {
+            margin-bottom: 20px;
+        }
+
+        .admin-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .status-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-btn.online {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status-btn.offline {
+            background: #ff4444;
+            color: white;
+        }
+
+        .clear-btn {
+            background: #ff4444;
+            color: white;
+        }
+
+        .export-btn {
+            background: #2196F3;
+            color: white;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .chat-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .chat-tab {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .chat-tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .chat-messages {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .message.customer {
+            justify-content: flex-start;
+        }
+
+        .message.admin {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .message.customer .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+
+        .message.admin .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message-time {
+            font-size: 10px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .response-area {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .response-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .response-input:focus {
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .quick-responses {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .quick-btn {
+            padding: 10px 15px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .quick-btn:hover {
+            background: #f0f0f0;
+            border-color: #667eea;
+        }
+
+        .no-messages {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            padding: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .admin-container {
+                width: 95%;
+                height: 95vh;
+            }
+            
+            .admin-content {
+                flex-direction: column;
+            }
+            
+            .admin-sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>🎛️ Painel Admin - Rosany Seguros</h1>
+            <div class="admin-header-info">
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span id="statusText">Online</span>
+                </div>
+                <button onclick="logout()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer;">🚪 Sair</button>
+            </div>
+        </div>
+
+        <div class="admin-content">
+            <div class="admin-sidebar">
+                <div class="admin-section">
+                    <h3>📊 Controles</h3>
+                    <div class="status-controls">
+                        <button id="toggleStatus" class="control-btn status-btn online">🟢 Online</button>
+                        <button onclick="clearChat()" class="control-btn clear-btn">🗑️ Limpar Chat</button>
+                        <button onclick="exportChat()" class="control-btn export-btn">📥 Exportar</button>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <h3>📈 Estatísticas</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number" id="messagesToday">0</div>
+                            <div class="stat-label">Mensagens Hoje</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="customersServed">0</div>
+                            <div class="stat-label">Clientes Atendidos</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="pendingMessages">0</div>
+                            <div class="stat-label">Pendentes</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalMessages">0</div>
+                            <div class="stat-label">Total Mensagens</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-main">
+                <div class="chat-area">
+                    <div class="chat-tabs">
+                        <button class="chat-tab active" onclick="switchTab('messages')">💬 Mensagens</button>
+                        <button class="chat-tab" onclick="switchTab('responses')">⚡ Respostas Rápidas</button>
+                    </div>
+
+                    <div id="messagesTab" class="tab-content">
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="no-messages">Nenhuma mensagem ainda...</div>
+                        </div>
+
+                        <div class="response-area">
+                            <input type="text" class="response-input" id="responseInput" placeholder="Digite sua resposta..." maxlength="500">
+                            <button class="send-btn" onclick="sendMessage()">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="responsesTab" class="tab-content" style="display: none;">
+                        <div class="quick-responses">
+                            <button class="quick-btn" onclick="sendQuickResponse('saudacao')">👋 Saudação</button>
+                            <button class="quick-btn" onclick="sendQuickResponse('cotacao')">📋 Cotação</button>
+                            <button class="quick-btn" onclick="sendQuickResponse('informacoes')">ℹ️ Informações</button>
+                            <button class="quick-btn" onclick="sendQuickResponse('contato')">📞 Contato</button>
+                            <button class="quick-btn" onclick="sendQuickResponse('emergencia')">🚨 Emergência</button>
+                            <button class="quick-btn" onclick="sendQuickResponse('agradecimento')">🙏 Agradecimento</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sistema de Chat Admin
+        window.ROSANY_ADMIN_SYSTEM = {
+            messages: [],
+            isOnline: true,
+            
+            init: function() {
+                this.loadMessages();
+                this.setupEventListeners();
+                this.updateStats();
+                console.log("✅ Sistema Admin inicializado!");
+            },
+            
+            setupEventListeners: function() {
+                document.getElementById('responseInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.sendMessage();
+                    }
+                });
+                
+                document.getElementById('toggleStatus').addEventListener('click', () => {
+                    this.toggleStatus();
+                });
+            },
+            
+            sendMessage: function() {
+                const input = document.getElementById('responseInput');
+                const message = input.value.trim();
+                
+                if (!message) return;
+                
+                this.addMessage(message, 'admin');
+                input.value = '';
+                this.updateStats();
+            },
+            
+            addMessage: function(message, sender) {
+                const messageObj = {
+                    id: Date.now(),
+                    message: message,
+                    sender: sender,
+                    timestamp: new Date()
+                };
+                
+                this.messages.push(messageObj);
+                this.displayMessage(messageObj);
+                this.saveMessages();
+            },
+            
+            displayMessage: function(messageObj) {
+                const container = document.getElementById('chatMessages');
+                const noMessages = container.querySelector('.no-messages');
+                
+                if (noMessages) {
+                    noMessages.remove();
+                }
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${messageObj.sender}`;
+                
+                const time = messageObj.timestamp.toLocaleTimeString('pt-BR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        ${messageObj.sender === 'admin' ? '<strong>Rosany:</strong> ' : ''}${messageObj.message.replace(/\n/g, '<br>')}
+                        <div class="message-time">${time}</div>
+                    </div>
+                `;
+                
+                container.appendChild(messageDiv);
+                container.scrollTop = container.scrollHeight;
+            },
+            
+            sendQuickResponse: function(type) {
+                const responses = {
+                    'saudacao': 'Olá! 👋 Bem-vindo à Rosany Seguros! Como posso ajudá-lo hoje?',
+                    'cotacao': 'Claro! Para fazer uma cotação personalizada, preciso de algumas informações:\n\n• Tipo de seguro (Auto, Residencial, Vida, etc.)\n• Seus dados pessoais\n• Informações do bem a ser segurado\n\nPosso te ajudar com isso?',
+                    'informacoes': 'Oferecemos diversos tipos de seguros:\n\n🚗 **Seguro Auto** - Proteção completa\n🏠 **Seguro Residencial** - Proteja sua casa\n❤️ **Seguro de Vida** - Segurança para a família\n🏢 **Seguro Empresarial** - Proteção para seu negócio\n\nQual tipo te interessa?',
+                    'contato': 'Para um atendimento mais personalizado, você pode me contatar:\n\n📱 **WhatsApp:** (27) 99999-9999\n📞 **Telefone:** (27) 99999-9999\n📧 **Email:** contato@rosanyseguros.com',
+                    'emergencia': '🚨 **ATENDIMENTO DE EMERGÊNCIA** 🚨\n\nPara sinistros e emergências:\n\n📱 **WhatsApp 24h:** (27) 99999-9999\n📞 **Telefone 24h:** (27) 99999-9999\n\nNossa equipe está sempre disponível!',
+                    'agradecimento': 'Obrigada pelo seu contato! 😊\n\nFoi um prazer atendê-lo. Se precisar de mais alguma coisa, estarei aqui para ajudar!\n\nTenha um ótimo dia! 🌟'
+                };
+                
+                const response = responses[type];
+                if (response) {
+                    this.addMessage(response, 'admin');
+                    this.updateStats();
+                }
+            },
+            
+            toggleStatus: function() {
+                this.isOnline = !this.isOnline;
+                const statusBtn = document.getElementById('toggleStatus');
+                const statusText = document.getElementById('statusText');
+                
+                if (this.isOnline) {
+                    statusBtn.textContent = '🟢 Online';
+                    statusBtn.className = 'control-btn status-btn online';
+                    statusText.textContent = 'Online';
+                    this.addMessage('Rosany está online e pronta para atendê-lo! 😊', 'admin');
+                } else {
+                    statusBtn.textContent = '🔴 Offline';
+                    statusBtn.className = 'control-btn status-btn offline';
+                    statusText.textContent = 'Offline';
+                    this.addMessage('Rosany está offline. Deixe sua mensagem que retornaremos em breve!', 'admin');
+                }
+            },
+            
+            updateStats: function() {
+                const today = new Date().toDateString();
+                const todayMessages = this.messages.filter(msg => 
+                    new Date(msg.timestamp).toDateString() === today
+                );
+                
+                const customerMessages = this.messages.filter(msg => msg.sender !== 'admin');
+                
+                document.getElementById('messagesToday').textContent = todayMessages.length;
+                document.getElementById('customersServed').textContent = customerMessages.length;
+                document.getElementById('totalMessages').textContent = this.messages.length;
+                document.getElementById('pendingMessages').textContent = '0'; // Implementar lógica se necessário
+            },
+            
+            saveMessages: function() {
+                localStorage.setItem('rosany_admin_messages', JSON.stringify(this.messages));
+            },
+            
+            loadMessages: function() {
+                const saved = localStorage.getItem('rosany_admin_messages');
+                if (saved) {
+                    this.messages = JSON.parse(saved);
+                    this.messages.forEach(msg => this.displayMessage(msg));
+                }
+            }
+        };
+
+        // Funções globais
+        function sendMessage() {
+            window.ROSANY_ADMIN_SYSTEM.sendMessage();
+        }
+
+        function sendQuickResponse(type) {
+            window.ROSANY_ADMIN_SYSTEM.sendQuickResponse(type);
+        }
+
+        function clearChat() {
+            if (confirm('Tem certeza que deseja limpar todo o chat?')) {
+                window.ROSANY_ADMIN_SYSTEM.messages = [];
+                window.ROSANY_ADMIN_SYSTEM.saveMessages();
+                
+                const container = document.getElementById('chatMessages');
+                container.innerHTML = '<div class="no-messages">Nenhuma mensagem ainda...</div>';
+                
+                window.ROSANY_ADMIN_SYSTEM.updateStats();
+            }
+        }
+
+        function exportChat() {
+            const chatData = {
+                timestamp: new Date().toISOString(),
+                messages: window.ROSANY_ADMIN_SYSTEM.messages,
+                totalMessages: window.ROSANY_ADMIN_SYSTEM.messages.length
+            };
+            
+            const dataStr = JSON.stringify(chatData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `chat-rosany-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.chat-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+            
+            event.target.classList.add('active');
+            document.getElementById(tab + 'Tab').style.display = 'block';
+        }
+
+        function logout() {
+            if (confirm('Tem certeza que deseja sair?')) {
+                window.location.href = '/';
+            }
+        }
+
+        // Inicializar quando carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            window.ROSANY_ADMIN_SYSTEM.init();
+        });
+    </script>
+</body>
+</html>
