@@ -1,4 +1,4 @@
-// Chat Widget para Rosany Seguros
+// Chat Widget para Rosany Seguros - v2.1 (Sem redirecionamento)
 (function() {
     'use strict';
 
@@ -485,6 +485,8 @@
 
     // Função para enviar mensagem para o painel admin
     function sendMessageToAdmin(customerId, customerName, message) {
+        console.log('🚀 sendMessageToAdmin chamada - SEM REDIRECIONAMENTO');
+        
         // Criar objeto da mensagem
         const messageData = {
             customerId: customerId,
@@ -496,7 +498,7 @@
         // Salvar no localStorage para o admin acessar
         localStorage.setItem('rosany_admin_messages', JSON.stringify(messageData));
         
-        console.log('Mensagem enviada:', messageData);
+        console.log('✅ Mensagem salva no localStorage:', messageData);
         
         // Mostrar mensagem de confirmação
         addMessage('✅ Mensagem enviada! Nossa equipe recebeu sua mensagem e responderá em breve. 😊', 'bot');
@@ -505,6 +507,8 @@
         addMessage('📞 Se precisar de atendimento imediato, entre em contato:', 'bot');
         addMessage(`📱 WhatsApp: ${CHAT_CONFIG.whatsapp}`, 'bot');
         addMessage(`📧 Email: ${CHAT_CONFIG.email}`, 'bot');
+        
+        console.log('✅ Função sendMessageToAdmin finalizada - SEM REDIRECIONAMENTO');
     }
 
     function showTyping() {
