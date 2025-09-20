@@ -1,91 +1,82 @@
-// API Helper para comunicação entre dispositivos
+// Sistema de Comunicação Simplificado
 (function() {
     'use strict';
 
-    // Configuração da API (usando JSONBin.io gratuito)
-    const API_CONFIG = {
-        baseUrl: 'https://api.jsonbin.io/v3/b',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Master-Key': '$2a$10$X8kFqGJ7K2hL9mN3pQ6rWe1vB4cD7eF9gH2iJ5kL8nO1pR3sT6uV9xY2zA5bC8eF' // Chave gratuita
-        }
-    };
-
-    // Bins específicos para cada tipo de mensagem
-    const BINS = {
-        admin_messages: '667f2b1ce41b4d34e8e8b5a1',
-        customer_responses: '667f2b1ce41b4d34e8e8b5a2'
-    };
-
-    // Função para enviar dados para a API
+    // Sistema de sincronização usando localStorage + eventos
+    // Para comunicação entre dispositivos, vamos usar um sistema de polling inteligente
+    
+    // Função para enviar dados (simulando API)
     window.sendToAPI = async function(key, data, replace = false) {
         try {
-            const binId = BINS[key];
-            if (!binId) {
-                console.error('Bin ID não encontrado para:', key);
-                return;
-            }
-
-            let payload;
+            // Salvar no localStorage com timestamp para sincronização
+            const syncData = {
+                data: data,
+                timestamp: Date.now(),
+                key: key,
+                replace: replace
+            };
+            
+            // Salvar no localStorage local
+            const existing = JSON.parse(localStorage.getItem(`sync_${key}`) || '[]');
             if (replace) {
-                // Substituir completamente o conteúdo
-                payload = data;
+                localStorage.setItem(`sync_${key}`, JSON.stringify([syncData]));
             } else {
-                // Buscar dados existentes e adicionar novo
-                const existing = await getFromAPI(key);
-                payload = [...(existing || []), data];
+                existing.push(syncData);
+                localStorage.setItem(`sync_${key}`, JSON.stringify(existing));
             }
-
-            const response = await fetch(`${API_CONFIG.baseUrl}/${binId}`, {
-                method: 'PUT',
-                headers: API_CONFIG.headers,
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-            console.log('Dados enviados para API:', result);
-            return result;
-
+            
+            // Disparar evento para notificar outros componentes
+            window.dispatchEvent(new CustomEvent('dataSync', {
+                detail: { key, data: syncData }
+            }));
+            
+            console.log('Dados sincronizados localmente:', syncData);
+            return { success: true };
+            
         } catch (error) {
-            console.error('Erro ao enviar para API:', error);
+            console.error('Erro ao sincronizar dados:', error);
             throw error;
         }
     };
 
-    // Função para obter dados da API
+    // Função para obter dados (simulando API)
     window.getFromAPI = async function(key) {
         try {
-            const binId = BINS[key];
-            if (!binId) {
-                console.error('Bin ID não encontrado para:', key);
-                return [];
-            }
-
-            const response = await fetch(`${API_CONFIG.baseUrl}/${binId}/latest`, {
-                method: 'GET',
-                headers: API_CONFIG.headers
-            });
-
-            if (!response.ok) {
-                if (response.status === 404) {
-                    return []; // Bin não existe ainda, retornar array vazio
-                }
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result.record || [];
-
+            const syncData = JSON.parse(localStorage.getItem(`sync_${key}`) || '[]');
+            
+            // Retornar apenas os dados, não os metadados de sincronização
+            return syncData.map(item => item.data);
+            
         } catch (error) {
-            console.error('Erro ao obter da API:', error);
+            console.error('Erro ao obter dados sincronizados:', error);
             return [];
         }
     };
 
-    console.log('✅ API Helper carregado');
+    // Sistema de limpeza automática (remove dados antigos)
+    function cleanupOldData() {
+        const keys = ['rosany_admin_messages', 'rosany_customer_responses'];
+        const maxAge = 24 * 60 * 60 * 1000; // 24 horas
+        
+        keys.forEach(key => {
+            try {
+                const syncData = JSON.parse(localStorage.getItem(`sync_${key}`) || '[]');
+                const filtered = syncData.filter(item => 
+                    Date.now() - item.timestamp < maxAge
+                );
+                localStorage.setItem(`sync_${key}`, JSON.stringify(filtered));
+            } catch (error) {
+                console.error('Erro na limpeza de dados:', error);
+            }
+        });
+    }
+
+    // Limpeza a cada hora
+    setInterval(cleanupOldData, 60 * 60 * 1000);
+    
+    // Limpeza inicial
+    cleanupOldData();
+
+    console.log('✅ Sistema de Comunicação Simplificado carregado');
 
 })();

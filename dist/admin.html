@@ -457,7 +457,7 @@
                 const localMessages = JSON.parse(localStorage.getItem('rosany_admin_messages') || '[]');
                 
                 // Verificar API também
-                const apiMessages = await getFromAPI('admin_messages') || [];
+                const apiMessages = await getFromAPI('rosany_admin_messages') || [];
                 
                 // Combinar mensagens (remover duplicatas)
                 const allMessages = [...localMessages, ...apiMessages];
@@ -474,7 +474,7 @@
                     
                     // Limpar mensagens processadas
                     localStorage.removeItem('rosany_admin_messages');
-                    await sendToAPI('admin_messages', [], true); // Limpar API também
+                    await sendToAPI('rosany_admin_messages', [], true); // Limpar API também
                 }
                 
             } catch (error) {
@@ -669,7 +669,7 @@
                 localStorage.setItem('rosany_customer_responses', JSON.stringify(existingResponses));
                 
                 // Enviar para API para comunicação entre dispositivos
-                await sendToAPI('customer_responses', responseData);
+                await sendToAPI('rosany_customer_responses', responseData);
                 
                 console.log('Resposta enviada para cliente:', responseData);
                 
