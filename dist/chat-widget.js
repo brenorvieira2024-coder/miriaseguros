@@ -499,6 +499,9 @@
         existingMessages.push(messageData);
         localStorage.setItem('rosany_admin_messages', JSON.stringify(existingMessages));
         
+        console.log('Mensagem salva no localStorage:', messageData);
+        console.log('Total de mensagens no localStorage:', existingMessages.length);
+        
         // Disparar evento customizado para notificar o painel admin
         window.dispatchEvent(new CustomEvent('newCustomerMessage', {
             detail: messageData

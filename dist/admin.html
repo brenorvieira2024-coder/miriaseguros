@@ -436,6 +436,7 @@
                     <div class="chat-controls">
                         <button class="control-btn clear-btn" onclick="clearCurrentConversation()">🗑️ Limpar</button>
                         <button class="control-btn export-btn" onclick="exportCurrentConversation()">📥 Exportar</button>
+                        <button class="control-btn" onclick="simulateMessageFromStorage()" style="background: #4CAF50; color: white;">🧪 Teste</button>
                     </div>
                 </div>
 
@@ -753,14 +754,18 @@
             checkPendingMessages: function() {
                 const pendingMessages = JSON.parse(localStorage.getItem('rosany_admin_messages') || '[]');
                 
-                pendingMessages.forEach(messageData => {
-                    if (messageData.type === 'customer_message') {
-                        this.handleCustomerMessage(messageData);
-                    }
-                });
+                console.log('Verificando mensagens pendentes:', pendingMessages);
                 
-                // Limpar mensagens processadas
-                localStorage.removeItem('rosany_admin_messages');
+                if (pendingMessages.length > 0) {
+                    pendingMessages.forEach(messageData => {
+                        if (messageData.type === 'customer_message') {
+                            this.handleCustomerMessage(messageData);
+                        }
+                    });
+                    
+                    // Limpar mensagens processadas
+                    localStorage.removeItem('rosany_admin_messages');
+                }
             }
         };
 
@@ -798,6 +803,20 @@
             const customerId = 'customer_' + Date.now();
             
             window.ROSANY_CONVERSATIONS.createConversation(customerId, randomCustomer, randomMessage);
+        }
+        
+        // Função para simular mensagem do localStorage (para teste)
+        function simulateMessageFromStorage() {
+            const testMessage = {
+                customerId: 'test_customer_123',
+                customerName: 'Cliente Teste',
+                message: 'Esta é uma mensagem de teste',
+                timestamp: new Date().toISOString(),
+                type: 'customer_message'
+            };
+            
+            localStorage.setItem('rosany_admin_messages', JSON.stringify([testMessage]));
+            console.log('Mensagem de teste adicionada ao localStorage');
         }
 
         // Inicializar quando carregar
