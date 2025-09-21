@@ -495,13 +495,57 @@
             timestamp: new Date().toISOString()
         };
         
-        // Salvar no localStorage para o admin acessar
+        // Salvar no localStorage para o admin acessar (desktop)
         localStorage.setItem('rosany_admin_messages', JSON.stringify(messageData));
         
+        // Para mobile, criar URL com a mensagem
+        const adminUrl = window.location.origin + '/admin.html?message=' + encodeURIComponent(JSON.stringify(messageData));
+        
         console.log('✅ Mensagem salva no localStorage:', messageData);
+        console.log('📱 URL do admin para mobile:', adminUrl);
         
         // Mostrar mensagem de confirmação
         addMessage('✅ Mensagem enviada! Nossa equipe recebeu sua mensagem e responderá em breve. 😊', 'bot');
+        
+        // Se for mobile, mostrar link para o admin
+        if (window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            addMessage('📱 Para acessar o painel admin no computador, use este link:', 'bot');
+            addMessage(`🔗 ${adminUrl}`, 'bot');
+            
+            // Adicionar botão para copiar link
+            const copyButton = document.createElement('button');
+            copyButton.innerHTML = '📋 Copiar Link do Admin';
+            copyButton.style.cssText = `
+                background: #667eea;
+                color: white;
+                border: none;
+                padding: 10px 15px;
+                border-radius: 20px;
+                margin: 10px 0;
+                cursor: pointer;
+                font-size: 14px;
+                width: 100%;
+            `;
+            copyButton.onclick = () => {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(adminUrl).then(() => {
+                        addMessage('✅ Link copiado! Cole no computador para acessar o admin.', 'bot');
+                    });
+                } else {
+                    // Fallback para navegadores antigos
+                    const textArea = document.createElement('textarea');
+                    textArea.value = adminUrl;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    addMessage('✅ Link copiado! Cole no computador para acessar o admin.', 'bot');
+                }
+            };
+            
+            const messagesContainer = document.getElementById('rosanyChatMessages');
+            messagesContainer.appendChild(copyButton);
+        }
         
         // Mostrar informações de contato alternativo
         addMessage('📞 Se precisar de atendimento imediato, entre em contato:', 'bot');
