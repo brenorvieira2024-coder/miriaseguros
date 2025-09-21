@@ -1,15 +1,15 @@
-// Chat Widget para Rosany Seguros - v2.1 (Sem redirecionamento)
+// Chat Widget Rosany Seguros - Sistema Simplificado e Funcional
 (function() {
     'use strict';
 
     // Configurações do chat
     const CHAT_CONFIG = {
         businessName: "Rosany Seguros",
-        whatsapp: "5527999999999", // Substitua pelo número real
+        whatsapp: "5527999999999",
         email: "contato@rosanyseguros.com",
         phone: "5527999999999",
-        position: "bottom-right", // bottom-right, bottom-left, top-right, top-left
-        theme: "blue" // blue, green, purple
+        position: "bottom-right",
+        theme: "blue"
     };
 
     // Mensagens automáticas
@@ -30,23 +30,8 @@
             }
             
             .rosany-chat-widget.bottom-right {
-                bottom: 80px;
-                right: 20px;
-            }
-            
-            .rosany-chat-widget.bottom-left {
                 bottom: 20px;
-                left: 20px;
-            }
-            
-            .rosany-chat-widget.top-right {
-                top: 20px;
                 right: 20px;
-            }
-            
-            .rosany-chat-widget.top-left {
-                top: 20px;
-                left: 20px;
             }
             
             .rosany-chat-toggle {
@@ -104,23 +89,6 @@
                 flex-direction: column;
                 overflow: hidden;
                 border: 1px solid #e0e0e0;
-            }
-            
-            .rosany-chat-container.bottom-left {
-                right: auto;
-                left: 0;
-            }
-            
-            .rosany-chat-container.top-right {
-                bottom: auto;
-                top: 80px;
-            }
-            
-            .rosany-chat-container.top-left {
-                bottom: auto;
-                top: 80px;
-                right: auto;
-                left: 0;
             }
             
             .rosany-chat-header {
@@ -201,27 +169,6 @@
                 border-bottom-left-radius: 5px;
             }
             
-            .rosany-chat-quick-actions {
-                display: flex;
-                gap: 8px;
-                margin-bottom: 10px;
-                flex-wrap: wrap;
-            }
-            
-            .rosany-chat-quick-action {
-                padding: 6px 12px;
-                background: #f0f0f0;
-                border: none;
-                border-radius: 15px;
-                font-size: 11px;
-                cursor: pointer;
-                transition: background 0.3s;
-            }
-            
-            .rosany-chat-quick-action:hover {
-                background: #e0e0e0;
-            }
-            
             .rosany-chat-input-container {
                 padding: 15px;
                 background: white;
@@ -272,42 +219,44 @@
                 transform: none;
             }
             
-            .rosany-chat-typing {
-                display: none;
-                align-items: center;
-                gap: 5px;
-                padding: 10px 15px;
+            .admin-link-container {
+                background: #e3f2fd;
+                border: 1px solid #2196f3;
+                border-radius: 10px;
+                padding: 10px;
+                margin: 10px 0;
+            }
+            
+            .admin-link-text {
+                font-size: 12px;
+                color: #1976d2;
+                margin-bottom: 8px;
+            }
+            
+            .admin-link {
+                font-size: 11px;
+                color: #1976d2;
+                word-break: break-all;
                 background: white;
+                padding: 5px;
+                border-radius: 5px;
                 border: 1px solid #e0e0e0;
-                border-radius: 18px;
-                border-bottom-left-radius: 5px;
-                max-width: 80px;
-                margin-bottom: 10px;
             }
             
-            .rosany-chat-typing-dot {
-                width: 6px;
-                height: 6px;
-                background: #999;
-                border-radius: 50%;
-                animation: rosany-typing 1.4s infinite;
+            .copy-button {
+                background: #2196f3;
+                color: white;
+                border: none;
+                padding: 8px 12px;
+                border-radius: 15px;
+                font-size: 12px;
+                cursor: pointer;
+                margin-top: 8px;
+                width: 100%;
             }
             
-            .rosany-chat-typing-dot:nth-child(2) {
-                animation-delay: 0.2s;
-            }
-            
-            .rosany-chat-typing-dot:nth-child(3) {
-                animation-delay: 0.4s;
-            }
-            
-            @keyframes rosany-typing {
-                0%, 60%, 100% {
-                    transform: translateY(0);
-                }
-                30% {
-                    transform: translateY(-10px);
-                }
+            .copy-button:hover {
+                background: #1976d2;
             }
             
             @media (max-width: 480px) {
@@ -338,25 +287,19 @@
                     <button class="rosany-chat-close" id="rosanyChatClose">×</button>
                 </div>
                 
-            <div class="rosany-chat-messages" id="rosanyChatMessages">
-                <div class="rosany-chat-message bot">
-                    <div class="rosany-chat-message-content">
-                        Olá! 👋 Bem-vindo à ${CHAT_CONFIG.businessName}!<br>
-                        Digite sua mensagem e nossa equipe responderá em breve.
+                <div class="rosany-chat-messages" id="rosanyChatMessages">
+                    <div class="rosany-chat-message bot">
+                        <div class="rosany-chat-message-content">
+                            Olá! 👋 Bem-vindo à ${CHAT_CONFIG.businessName}!<br>
+                            Digite sua mensagem e nossa equipe responderá em breve.
+                        </div>
                     </div>
-                </div>
-            </div>
-                
-                <div class="rosany-chat-typing" id="rosanyChatTyping">
-                    <div class="rosany-chat-typing-dot"></div>
-                    <div class="rosany-chat-typing-dot"></div>
-                    <div class="rosany-chat-typing-dot"></div>
                 </div>
                 
                 <div class="rosany-chat-input-container">
                     <div class="rosany-chat-input-wrapper">
                         <input type="text" class="rosany-chat-input" id="rosanyChatInput" placeholder="Digite sua mensagem..." maxlength="500">
-                        <button class="rosany-chat-send" id="rosanyChatSend" onclick="rosanySendMessage()">
+                        <button class="rosany-chat-send" id="rosanyChatSend">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
                             </svg>
@@ -367,11 +310,14 @@
         </div>
     `;
 
-    // Funções do widget
+    // Variáveis globais
     let isOpen = false;
     let hasNewMessage = false;
 
+    // Função principal de inicialização
     function initWidget() {
+        console.log('🚀 Inicializando Chat Widget Rosany Seguros');
+        
         // Adicionar CSS
         document.head.insertAdjacentHTML('beforeend', widgetCSS);
         
@@ -381,9 +327,10 @@
         // Event listeners
         document.getElementById('rosanyChatToggle').addEventListener('click', toggleChat);
         document.getElementById('rosanyChatClose').addEventListener('click', closeChat);
+        document.getElementById('rosanyChatSend').addEventListener('click', sendMessage);
         document.getElementById('rosanyChatInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                rosanySendMessage();
+                sendMessage();
             }
         });
         
@@ -393,12 +340,12 @@
                 showNotification();
             }
         }, 3000);
+        
+        console.log('✅ Chat Widget inicializado com sucesso');
     }
 
+    // Função para alternar chat
     function toggleChat() {
-        const container = document.getElementById('rosanyChatContainer');
-        const badge = document.getElementById('rosanyNotificationBadge');
-        
         if (isOpen) {
             closeChat();
         } else {
@@ -406,6 +353,7 @@
         }
     }
 
+    // Função para abrir chat
     function openChat() {
         const container = document.getElementById('rosanyChatContainer');
         const badge = document.getElementById('rosanyNotificationBadge');
@@ -421,12 +369,14 @@
         }, 100);
     }
 
+    // Função para fechar chat
     function closeChat() {
         const container = document.getElementById('rosanyChatContainer');
         container.style.display = 'none';
         isOpen = false;
     }
 
+    // Função para mostrar notificação
     function showNotification() {
         if (!isOpen && !hasNewMessage) {
             const badge = document.getElementById('rosanyNotificationBadge');
@@ -435,11 +385,14 @@
         }
     }
 
-    function rosanySendMessage() {
+    // Função para enviar mensagem
+    function sendMessage() {
         const input = document.getElementById('rosanyChatInput');
         const message = input.value.trim();
         
         if (!message) return;
+
+        console.log('📤 Enviando mensagem:', message);
 
         // Gerar ID único para o cliente
         let customerId = localStorage.getItem('rosany_customer_id');
@@ -455,19 +408,37 @@
             localStorage.setItem('rosany_customer_name', customerName);
         }
 
+        // Adicionar mensagem do usuário
         addMessage(message, 'user');
         input.value = '';
 
-        // Enviar mensagem para o painel admin
-        sendMessageToAdmin(customerId, customerName, message);
+        // Processar resposta automática
+        processAutoResponse(message);
+
+        // Enviar para o admin
+        sendToAdmin(customerId, customerName, message);
     }
 
-    function rosanySendQuickMessage(message) {
-        const input = document.getElementById('rosanyChatInput');
-        input.value = message;
-        rosanySendMessage();
+    // Função para processar resposta automática
+    function processAutoResponse(message) {
+        const lowerMessage = message.toLowerCase();
+        
+        for (const [key, response] of Object.entries(AUTO_RESPONSES)) {
+            if (lowerMessage.includes(key)) {
+                setTimeout(() => {
+                    addMessage(response, 'bot');
+                }, 1000);
+                return;
+            }
+        }
+        
+        // Resposta padrão
+        setTimeout(() => {
+            addMessage('Obrigada pelo seu contato! 😊\n\nNossa equipe recebeu sua mensagem e responderá em breve.', 'bot');
+        }, 1000);
     }
 
+    // Função para adicionar mensagem
     function addMessage(content, sender) {
         const messagesContainer = document.getElementById('rosanyChatMessages');
         const messageDiv = document.createElement('div');
@@ -483,9 +454,9 @@
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
-    // Função para enviar mensagem para o painel admin
-    function sendMessageToAdmin(customerId, customerName, message) {
-        console.log('🚀 sendMessageToAdmin chamada - SEM REDIRECIONAMENTO');
+    // Função para enviar mensagem para o admin
+    function sendToAdmin(customerId, customerName, message) {
+        console.log('📨 Enviando para admin:', { customerId, customerName, message });
         
         // Criar objeto da mensagem
         const messageData = {
@@ -495,100 +466,52 @@
             timestamp: new Date().toISOString()
         };
         
-        // Salvar no localStorage para o admin acessar (desktop)
+        // Salvar no localStorage (para desktop)
         localStorage.setItem('rosany_admin_messages', JSON.stringify(messageData));
         
-        // Para mobile, criar URL com a mensagem
+        // Criar URL para mobile
         const adminUrl = window.location.origin + '/admin.html?message=' + encodeURIComponent(JSON.stringify(messageData));
         
-        console.log('✅ Mensagem salva no localStorage:', messageData);
-        console.log('📱 URL do admin para mobile:', adminUrl);
+        // Detectar se é mobile
+        const isMobile = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         
-        // Mostrar mensagem de confirmação
-        addMessage('✅ Mensagem enviada! Nossa equipe recebeu sua mensagem e responderá em breve. 😊', 'bot');
-        
-        // Se for mobile, mostrar link para o admin
-        if (window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-            addMessage('📱 Para acessar o painel admin no computador, use este link:', 'bot');
-            addMessage(`🔗 ${adminUrl}`, 'bot');
-            
-            // Adicionar botão para copiar link
-            const copyButton = document.createElement('button');
-            copyButton.innerHTML = '📋 Copiar Link do Admin';
-            copyButton.style.cssText = `
-                background: #667eea;
-                color: white;
-                border: none;
-                padding: 10px 15px;
-                border-radius: 20px;
-                margin: 10px 0;
-                cursor: pointer;
-                font-size: 14px;
-                width: 100%;
-            `;
-            copyButton.onclick = () => {
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(adminUrl).then(() => {
-                        addMessage('✅ Link copiado! Cole no computador para acessar o admin.', 'bot');
-                    });
-                } else {
-                    // Fallback para navegadores antigos
-                    const textArea = document.createElement('textarea');
-                    textArea.value = adminUrl;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                    addMessage('✅ Link copiado! Cole no computador para acessar o admin.', 'bot');
-                }
-            };
-            
-            const messagesContainer = document.getElementById('rosanyChatMessages');
-            messagesContainer.appendChild(copyButton);
+        if (isMobile) {
+            // Para mobile, mostrar link do admin
+            setTimeout(() => {
+                const linkContainer = document.createElement('div');
+                linkContainer.className = 'admin-link-container';
+                linkContainer.innerHTML = `
+                    <div class="admin-link-text">📱 Para acessar no computador, use este link:</div>
+                    <div class="admin-link">${adminUrl}</div>
+                    <button class="copy-button" onclick="copyAdminLink('${adminUrl}')">📋 Copiar Link</button>
+                `;
+                
+                const messagesContainer = document.getElementById('rosanyChatMessages');
+                messagesContainer.appendChild(linkContainer);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 2000);
         }
         
-        // Mostrar informações de contato alternativo
-        addMessage('📞 Se precisar de atendimento imediato, entre em contato:', 'bot');
-        addMessage(`📱 WhatsApp: ${CHAT_CONFIG.whatsapp}`, 'bot');
-        addMessage(`📧 Email: ${CHAT_CONFIG.email}`, 'bot');
-        
-        console.log('✅ Função sendMessageToAdmin finalizada - SEM REDIRECIONAMENTO');
+        console.log('✅ Mensagem enviada para admin');
     }
 
-    function showTyping() {
-        const typing = document.getElementById('rosanyChatTyping');
-        typing.style.display = 'flex';
-        
-        const messagesContainer = document.getElementById('rosanyChatMessages');
-        messagesContainer.appendChild(typing);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-
-    function hideTyping() {
-        const typing = document.getElementById('rosanyChatTyping');
-        typing.style.display = 'none';
-    }
-
-    // Funções globais para uso externo
-    window.rosanySendMessage = rosanySendMessage;
-    window.rosanySendQuickMessage = rosanySendQuickMessage;
-    window.rosanyOpenChat = openChat;
-    window.rosanyCloseChat = closeChat;
-
-    // Função para verificar respostas do admin
-    function checkAdminResponses() {
-        const customerId = localStorage.getItem('rosany_customer_id');
-        if (!customerId) return;
-        
-        const response = localStorage.getItem('rosany_customer_response');
-        if (response) {
-            const responseData = JSON.parse(response);
-            if (responseData.customerId === customerId) {
-                addMessage(responseData.message, 'bot');
-                localStorage.removeItem('rosany_customer_response');
-            }
+    // Função global para copiar link
+    window.copyAdminLink = function(url) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(url).then(() => {
+                addMessage('✅ Link copiado! Cole no computador para acessar o admin.', 'bot');
+            });
+        } else {
+            // Fallback para navegadores antigos
+            const textArea = document.createElement('textarea');
+            textArea.value = url;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            addMessage('✅ Link copiado! Cole no computador para acessar o admin.', 'bot');
         }
-    }
+    };
 
     // Inicializar quando o DOM estiver pronto
     if (document.readyState === 'loading') {
@@ -596,8 +519,7 @@
     } else {
         initWidget();
     }
-    
-    // Verificação a cada 2 segundos
-    setInterval(checkAdminResponses, 2000);
+
+    console.log('🎯 Chat Widget Rosany Seguros carregado!');
 
 })();
