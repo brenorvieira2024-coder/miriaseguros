@@ -3,34 +3,71 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=1200, initial-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=1200, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="description" content="Rosany Seguros - Corretora de Seguros especialista com 15+ anos de experiência. Seguro Auto, Residencial, Vida, Empresarial e mais. Cotação gratuita!" />
     <meta name="keywords" content="corretora de seguros, seguro auto, seguro residencial, seguro de vida, seguro empresarial, cotação seguro, Rosany Seguros, Iúna, Espírito Santo" />
     <title>Rosany Seguros | Sua Parceira de Confiança em Seguros</title>
     <script type="module" crossorigin src="/assets/index-56QWuRdv.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-BWWxJwik.css">
     <style>
-      /* Força layout desktop em todos os dispositivos */
-      body {
+      /* FORÇA MODO DESKTOP EM TODOS OS DISPOSITIVOS */
+      html {
+        width: 1200px !important;
         min-width: 1200px !important;
+        max-width: 1200px !important;
+        margin: 0 auto !important;
+        overflow-x: auto !important;
+        -webkit-text-size-adjust: 100% !important;
+        -ms-text-size-adjust: 100% !important;
+        text-size-adjust: 100% !important;
+      }
+
+      body {
+        width: 1200px !important;
+        min-width: 1200px !important;
+        max-width: 1200px !important;
+        margin: 0 auto !important;
+        overflow-x: auto !important;
+        position: relative !important;
+      }
+
+      #root {
+        width: 1200px !important;
+        min-width: 1200px !important;
+        max-width: 1200px !important;
+        margin: 0 auto !important;
         overflow-x: auto !important;
       }
-      
-      #root {
-        min-width: 1200px !important;
+
+      /* IMPEDE ZOOM E AJUSTE AUTOMÁTICO EM MOBILE */
+      * {
+        -webkit-text-size-adjust: none !important;
+        -moz-text-size-adjust: none !important;
+        -ms-text-size-adjust: none !important;
+        text-size-adjust: none !important;
       }
-      
-      /* Impede zoom em dispositivos móveis */
-      html {
-        -webkit-text-size-adjust: 100%;
-        -ms-text-size-adjust: 100%;
-      }
-      
-      /* Garante que o conteúdo não se ajuste ao viewport móvel */
-      @media screen and (max-width: 1199px) {
-        body {
+
+      /* FORÇA LARGURA FIXA EM TODOS OS DISPOSITIVOS */
+      @media screen and (max-width: 1200px) {
+        html, body, #root {
           width: 1200px !important;
+          min-width: 1200px !important;
+          max-width: 1200px !important;
           margin: 0 auto !important;
+          overflow-x: auto !important;
+        }
+      }
+
+      /* BLOQUEIA ZOOM EM DISPOSITIVOS TÁTEIS */
+      @media screen and (max-width: 768px) {
+        html, body {
+          touch-action: pan-x pan-y !important;
+          -webkit-touch-callout: none !important;
+          -webkit-user-select: none !important;
+          -khtml-user-select: none !important;
+          -moz-user-select: none !important;
+          -ms-user-select: none !important;
+          user-select: none !important;
         }
       }
     </style>
