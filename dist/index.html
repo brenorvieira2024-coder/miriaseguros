@@ -152,10 +152,40 @@
           
           // Função para substituir o email
           function replaceEmail() {
+            // Buscar por diferentes tipos de elementos que podem conter o email
+            const selectors = [
+              'a[href*="mailto:brenorvieira2025@gmail.com"]',
+              'a[href="mailto:brenorvieira2025@gmail.com"]',
+              '*[textContent*="brenorvieira2025@gmail.com"]',
+              '*[innerHTML*="brenorvieira2025@gmail.com"]'
+            ];
+            
+            selectors.forEach(selector => {
+              const elements = document.querySelectorAll(selector);
+              elements.forEach(element => {
+                if (element.href && element.href.includes('brenorvieira2025@gmail.com')) {
+                  element.href = element.href.replace('brenorvieira2025@gmail.com', 'miriatoledo2016@gmail.com');
+                }
+                if (element.textContent && element.textContent.includes('brenorvieira2025@gmail.com')) {
+                  element.textContent = element.textContent.replace('brenorvieira2025@gmail.com', 'miriatoledo2016@gmail.com');
+                }
+                if (element.innerHTML && element.innerHTML.includes('brenorvieira2025@gmail.com')) {
+                  element.innerHTML = element.innerHTML.replace(/brenorvieira2025@gmail.com/gi, 'miriatoledo2016@gmail.com');
+                }
+              });
+            });
+            
+            // Buscar em todos os elementos também
             const allElements = document.querySelectorAll('*');
             allElements.forEach(element => {
               if (element.textContent && element.textContent.includes('brenorvieira2025@gmail.com')) {
+                element.textContent = element.textContent.replace('brenorvieira2025@gmail.com', 'miriatoledo2016@gmail.com');
+              }
+              if (element.innerHTML && element.innerHTML.includes('brenorvieira2025@gmail.com')) {
                 element.innerHTML = element.innerHTML.replace(/brenorvieira2025@gmail.com/gi, 'miriatoledo2016@gmail.com');
+              }
+              if (element.href && element.href.includes('brenorvieira2025@gmail.com')) {
+                element.href = element.href.replace('brenorvieira2025@gmail.com', 'miriatoledo2016@gmail.com');
               }
             });
           }
@@ -164,11 +194,17 @@
           removeSaibaMais();
           replaceEmail();
           
-          // Executar novamente após um delay para garantir que todos os elementos foram carregados
+          // Executar novamente após delays para garantir que todos os elementos foram carregados
+          setTimeout(removeSaibaMais, 500);
+          setTimeout(replaceEmail, 500);
           setTimeout(removeSaibaMais, 1000);
           setTimeout(replaceEmail, 1000);
+          setTimeout(removeSaibaMais, 2000);
+          setTimeout(replaceEmail, 2000);
           setTimeout(removeSaibaMais, 3000);
           setTimeout(replaceEmail, 3000);
+          setTimeout(removeSaibaMais, 5000);
+          setTimeout(replaceEmail, 5000);
         });
       </script>
     </style>
