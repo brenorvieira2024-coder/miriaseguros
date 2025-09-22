@@ -150,12 +150,25 @@
             });
           }
           
+          // Função para substituir o email
+          function replaceEmail() {
+            const allElements = document.querySelectorAll('*');
+            allElements.forEach(element => {
+              if (element.textContent && element.textContent.includes('brenorvieira2025@gmail.com')) {
+                element.innerHTML = element.innerHTML.replace(/brenorvieira2025@gmail.com/gi, 'miriatoledo2016@gmail.com');
+              }
+            });
+          }
+          
           // Executar imediatamente
           removeSaibaMais();
+          replaceEmail();
           
           // Executar novamente após um delay para garantir que todos os elementos foram carregados
           setTimeout(removeSaibaMais, 1000);
+          setTimeout(replaceEmail, 1000);
           setTimeout(removeSaibaMais, 3000);
+          setTimeout(replaceEmail, 3000);
         });
       </script>
     </style>
