@@ -9,6 +9,22 @@
     <title>Rosany Seguros | Sua Parceira de Confiança em Seguros</title>
     <script type="module" crossorigin src="/assets/index-56QWuRdv.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-BWWxJwik.css">
+    <style>
+      /* Ocultar formulário de cotação */
+      #contato form {
+        display: none !important;
+      }
+      
+      /* Ocultar título "Solicite uma Cotação" */
+      #contato h3:contains("Solicite uma Cotação") {
+        display: none !important;
+      }
+      
+      /* Ocultar toda a seção de contato com formulário */
+      #contato > div > div:last-child {
+        display: none !important;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
