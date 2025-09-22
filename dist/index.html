@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=1200, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
     <meta name="description" content="Rosany Seguros - Corretora de Seguros especialista com 15+ anos de experiência. Seguro Auto, Residencial, Vida, Empresarial e mais. Cotação gratuita!" />
     <meta name="keywords" content="corretora de seguros, seguro auto, seguro residencial, seguro de vida, seguro empresarial, cotação seguro, Rosany Seguros, Iúna, Espírito Santo" />
     <title>Rosany Seguros | Sua Parceira de Confiança em Seguros</title>
@@ -73,34 +73,43 @@
         color: transparent !important;
       }
       
-      /* FORÇAR MODO DESKTOP EM MOBILE */
+      /* MODO DESKTOP RESPONSIVO EM MOBILE */
       html, body {
-        min-width: 1200px !important;
-        overflow-x: auto !important;
         -webkit-text-size-adjust: 100% !important;
         -ms-text-size-adjust: 100% !important;
         text-size-adjust: 100% !important;
+        overflow-x: hidden !important;
       }
       
       #root {
-        min-width: 1200px !important;
-        overflow-x: auto !important;
+        overflow-x: hidden !important;
       }
       
-      /* Garantir que o conteúdo não se ajuste ao viewport móvel */
-      @media screen and (max-width: 1199px) {
-        html, body, #root {
-          width: 1200px !important;
-          min-width: 1200px !important;
-          margin: 0 auto !important;
-          overflow-x: auto !important;
-        }
-      }
-      
-      /* Bloquear zoom em dispositivos móveis */
+      /* Garantir que o site se ajuste à tela mas mantenha layout desktop */
       @media screen and (max-width: 768px) {
+        html, body, #root {
+          width: 100% !important;
+          max-width: 100% !important;
+          overflow-x: hidden !important;
+          overflow-y: auto !important;
+        }
+        
+        /* Manter layout desktop mas responsivo */
+        .container {
+          max-width: 100% !important;
+          padding-left: 1rem !important;
+          padding-right: 1rem !important;
+        }
+        
+        /* Ajustar elementos para não sair da tela */
+        * {
+          max-width: 100% !important;
+          box-sizing: border-box !important;
+        }
+        
+        /* Bloquear zoom mas permitir scroll vertical */
         html, body {
-          touch-action: pan-x pan-y !important;
+          touch-action: pan-y !important;
           -webkit-touch-callout: none !important;
           -webkit-user-select: none !important;
           user-select: none !important;
