@@ -24,6 +24,54 @@
       #contato > div > div:last-child {
         display: none !important;
       }
+      
+      /* Alterar nome do cabeçalho para "Rosany e Miria Seguros" */
+      header .text-xl.font-bold.text-gray-800 {
+        position: relative;
+      }
+      
+      header .text-xl.font-bold.text-gray-800::after {
+        content: "Rosany e Miria Seguros";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: white;
+        display: flex;
+        align-items: center;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: rgb(31 41 55);
+      }
+      
+      header .text-xl.font-bold.text-gray-800 {
+        color: transparent !important;
+      }
+      
+      /* Alterar nome no rodapé para "Rosany e Miria Seguros" */
+      footer .text-xl.font-bold {
+        position: relative;
+      }
+      
+      footer .text-xl.font-bold::after {
+        content: "Rosany e Miria Seguros";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgb(17 24 39);
+        display: flex;
+        align-items: center;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: white;
+      }
+      
+      footer .text-xl.font-bold {
+        color: transparent !important;
+      }
     </style>
   </head>
   <body>
