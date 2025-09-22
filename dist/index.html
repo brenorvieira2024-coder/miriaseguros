@@ -111,6 +111,53 @@
       #depoimentos {
         display: none !important;
       }
+      
+      /* Ocultar todos os textos/botões "Saiba mais" */
+      *:contains("Saiba mais") {
+        display: none !important;
+      }
+      
+      /* Ocultar botões com texto "Saiba mais" */
+      button:contains("Saiba mais"),
+      a:contains("Saiba mais"),
+      .btn:contains("Saiba mais"),
+      [class*="btn"]:contains("Saiba mais") {
+        display: none !important;
+      }
+      
+      /* Ocultar elementos com texto "Saiba mais" usando seletores mais específicos */
+      *[textContent*="Saiba mais"],
+      *[innerText*="Saiba mais"] {
+        display: none !important;
+      }
+      
+      /* JavaScript para remover todos os "Saiba mais" */
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          // Função para remover elementos com texto "Saiba mais"
+          function removeSaibaMais() {
+            const allElements = document.querySelectorAll('*');
+            allElements.forEach(element => {
+              if (element.textContent && element.textContent.includes('Saiba mais')) {
+                // Se o elemento contém apenas "Saiba mais", remove completamente
+                if (element.textContent.trim() === 'Saiba mais') {
+                  element.style.display = 'none';
+                } else {
+                  // Se contém outros textos, tenta remover apenas o "Saiba mais"
+                  element.innerHTML = element.innerHTML.replace(/Saiba mais/gi, '');
+                }
+              }
+            });
+          }
+          
+          // Executar imediatamente
+          removeSaibaMais();
+          
+          // Executar novamente após um delay para garantir que todos os elementos foram carregados
+          setTimeout(removeSaibaMais, 1000);
+          setTimeout(removeSaibaMais, 3000);
+        });
+      </script>
     </style>
   </head>
   <body>
